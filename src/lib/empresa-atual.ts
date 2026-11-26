@@ -1,31 +1,28 @@
 import "server-only";
-import { cache } from "react";
 import { connection } from "next/server";
-import { prisma } from "./prisma";
+import { redirect } from "next/navigation";
+import { lerSessao, type SessaoAtual } from "./sessao";
 
-/**
- * Id da empresa de quem está usando o sistema.
- *
- * Fase 4: vai sair da sessão do usuário logado.
- * Por enquanto: a primeira empresa cadastrada (a do seed).
- *
- * `cache` do React: se várias consultas pedirem o id na mesma requisição,
- * o banco é consultado uma vez só.
- */
-export const empresaAtualId = cache(async (): Promise<string> => {
-  // connection() avisa o Next: "daqui pra baixo depende da requisição, não gere no build".
-  // Sem isso o build tentaria consultar o banco para montar as páginas.
-  await connection();
+// DATA ACCESS LAYER: todo acesso a dados passa por aqui pra saber QUEM está pedindo.
+//
+// Na fase 2/3 esta função devolvia "a primeira empresa do banco".
+// Agora vem do usuário logado. Como TODAS as consultas e actions já chamavam
+// empresaAtualId(), trocar só este arquivo protegeu o sistema inteiro.
 
-  const empresa = await prisma.empresa.findFirst({
-    orderBy: { criadoEm: "asc" },
-    select: { id: true },
-  });
-  if (!empresa) {
-    throw new Error("Nenhuma empresa no banco. Rode `npm run db:seed`.");
-  }
-  return empresa.id;
-});
+/** O usuário logado. Se não houver sessão válida, manda pro /login (e para a execução). */
+export async function usuarioLogado(): Promise<SessaoAtual["usuario"]> {
+  // lerSessao() lê o cookie: isso já diz ao Next que depende da requisição
+  // (por isso não precisamos mais do connection() aqui).
+  const sessao = await lerSessao();
+  if (!sessao) redirect("/login");
+  return sessao.usuario;
+}
+
+/** Id da empresa do usuário logado. Toda consulta filtra por ele. */
+export async function empresaAtualId(): Promise<string> {
+  const usuario = await usuarioLogado();
+  return usuario.empresa.id;
+}
 
 /** Data e hora atuais, lidas na hora da requisição (não no build). */
 export async function agora(): Promise<Date> {

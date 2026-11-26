@@ -45,8 +45,51 @@ model Empresa {
   materiais     Material[]
   colaboradores Colaborador[]
   emprestimos   Emprestimo[]
+  usuarios      Usuario[]
 
   @@map("empresas")
+}
+
+// ---------- login ----------
+
+// Quem entra no sistema (dono, almoxarife). Colaborador é outra coisa: só retira material.
+model Usuario {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique // login pelo e-mail: único no sistema todo
+  // NUNCA a senha em si: só o hash (veja src/lib/senha.ts).
+  senhaHash String   @map("senha_hash")
+  papel     Papel    @default(ADMIN)
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  empresaId String  @map("empresa_id")
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  sessoes Sessao[]
+
+  @@index([empresaId])
+  @@map("usuarios")
+}
+
+enum Papel {
+  ADMIN // faz tudo
+  OPERADOR // (futuro) registra retiradas e devoluções, sem mexer em cadastros
+}
+
+// Uma sessão = um login ativo (um navegador). Sair apaga a sessão.
+model Sessao {
+  // O id é o HASH do token que fica no cookie. O token em si nunca é salvo:
+  // se alguém copiar o banco, não consegue usar as sessões.
+  id       String   @id
+  expiraEm DateTime @map("expira_em")
+  criadoEm DateTime @default(now()) @map("criado_em")
+
+  usuarioId String  @map("usuario_id")
+  // Apagar o usuário apaga as sessões dele.
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("sessoes")
 }
 
 model TipoMaterial {

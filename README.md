@@ -15,13 +15,13 @@ npm run db:seed       # dados de exemplo
 npm run dev
 ```
 
-Abra http://localhost:3000.
+Abra http://localhost:3000 e entre com `admin@exemplo.com` / `retira123` (criado pelo seed), ou cadastre uma empresa nova.
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Prisma 7 + PostgreSQL · Zod 4 · React Hook Form
+Next.js 16 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Prisma 7 + PostgreSQL · Zod 4 · React Hook Form · login próprio (sessão no banco + scrypt)
 
-Próximas fases: Auth.js · empréstimos · Vercel + Neon.
+Próximas fases: empréstimos · painel e histórico · testes e deploy (Vercel + Neon).
 
 ## Documentação
 
@@ -30,3 +30,4 @@ Próximas fases: Auth.js · empréstimos · Vercel + Neon.
 - [Fase 1 — telas com dados falsos](docs/fase-1.md)
 - [Fase 2 — banco de dados com Prisma](docs/fase-2.md)
 - [Fase 3 — cadastros com Server Actions, Zod e React Hook Form](docs/fase-3.md)
+- [Fase 4 — login e empresas](docs/fase-4.md)

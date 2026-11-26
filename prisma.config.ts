@@ -12,5 +12,8 @@ export default defineConfig({
   },
   datasource: {
     url: env("DATABASE_URL"),
+    // Banco descartável que o `migrate dev` usa pra comparar migrations.
+    // O `prisma dev` já oferece um (porta 51215). Em produção não é usado.
+    shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL,
   },
 });
