@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Phone } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Pencil, Phone } from "lucide-react";
 import {
   alterarAtivoAction,
   excluirColaboradorAction,
@@ -67,6 +67,15 @@ export default async function ColaboradorPage({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {colaborador.ativo && (
+            // ?colaborador=id: a tela de retirada já abre com ele escolhido
+            <Link
+              href={`/emprestimos/novo?colaborador=${colaborador.id}`}
+              className={buttonVariants({ size: "sm" })}
+            >
+              <ArrowLeftRight aria-hidden="true" /> Nova retirada
+            </Link>
+          )}
           <Link
             href={`/colaboradores/${colaborador.id}/editar`}
             className={buttonVariants({ variant: "outline", size: "sm" })}

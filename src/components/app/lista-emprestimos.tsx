@@ -98,7 +98,17 @@ export function ListaEmprestimos({
                   {formatarData(emprestimo.previsaoDevolucao)}
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={emprestimo.status} atrasado={atrasado} />
+                  {/* O status leva ao detalhe do empréstimo (onde se registra a devolução). */}
+                  <Link
+                    href={`/emprestimos/${emprestimo.id}`}
+                    aria-label="Abrir empréstimo"
+                    className="rounded-md"
+                  >
+                    <StatusBadge
+                      status={emprestimo.status}
+                      atrasado={atrasado}
+                    />
+                  </Link>
                 </TableCell>
               </TableRow>
             );

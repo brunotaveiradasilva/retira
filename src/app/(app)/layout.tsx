@@ -18,7 +18,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex min-h-svh flex-1 flex-col md:flex-row">
       {/* Computador: barra lateral fixa à esquerda */}
-      <aside className="bg-muted/30 hidden w-60 shrink-0 flex-col gap-6 border-r p-4 md:flex">
+      <aside className="bg-muted/30 hidden w-60 shrink-0 flex-col gap-6 border-r p-4 md:flex print:hidden">
         <Link href="/painel" className="px-2 py-1">
           <Logo size={28} />
         </Link>
@@ -31,7 +31,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       </aside>
 
       {/* Celular: logo + usuário no topo, menu rolável embaixo */}
-      <header className="bg-background sticky top-0 z-10 flex flex-col gap-2 border-b px-4 pt-3 pb-2 md:hidden">
+      <header className="bg-background sticky top-0 z-10 flex flex-col gap-2 border-b px-4 pt-3 pb-2 md:hidden print:hidden">
         <div className="flex items-center justify-between gap-4">
           <Link href="/painel">
             <Logo size={24} />
@@ -46,7 +46,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       </header>
 
       {/* children = a página da rota atual (painel, materiais...) */}
-      <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+      <main className="flex-1 px-4 py-6 md:px-8 md:py-8 print:p-0">
         <div className="mx-auto w-full max-w-5xl">{children}</div>
       </main>
     </div>

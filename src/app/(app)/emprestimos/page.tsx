@@ -1,8 +1,9 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { ListaEmprestimos } from "@/components/app/lista-emprestimos";
 import { PageHeader } from "@/components/app/page-header";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { listarEmprestimos } from "@/lib/consultas";
 import { agora } from "@/lib/empresa-atual";
 
@@ -22,9 +23,9 @@ export default async function EmprestimosPage() {
         titulo="Empréstimos"
         descricao="Retiradas e devoluções do almoxarifado"
         acoes={
-          <Button disabled>
+          <Link href="/emprestimos/novo" className={buttonVariants()}>
             <Plus aria-hidden="true" /> Nova retirada
-          </Button>
+          </Link>
         }
       />
 
