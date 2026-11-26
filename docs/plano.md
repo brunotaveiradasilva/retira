@@ -9,7 +9,7 @@ A empresa se cadastra, organiza os materiais por tipo, cadastra os colaboradores
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · React Hook Form + Zod · Prisma + PostgreSQL (Neon) · Auth.js · Vercel.
+Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · React Hook Form + Zod · Prisma 7 + PostgreSQL (local com `prisma dev`, Neon no deploy) · Auth.js · Vercel.
 Futuro: API em Java (Spring Boot) no mesmo Postgres.
 
 ## Modelo de dados
@@ -54,7 +54,7 @@ Emprestimo 1──N ItemEmprestimo N──1 Material
 | ----------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | 0 · Setup ✅      | Projeto criado, shadcn, Prettier, logo                         | Estrutura do Next, tsconfig, ESLint/Prettier                           |
 | 1 · Telas mock ✅ | Layout com sidebar, listas com dados falsos                    | Componentes, props tipadas, `.map`, rotas e layouts, `[id]`            |
-| 2 · Banco         | Prisma + Neon, migrations, seed                                | Server Components assíncronos, tipos gerados                           |
+| 2 · Banco ✅      | Prisma + Postgres, migrations, seed                            | Server Components assíncronos, tipos gerados                           |
 | 3 · CRUD          | Tipos, materiais, colaboradores                                | Server Actions, Zod, React Hook Form, `"use client"`, `revalidatePath` |
 | 4 · Auth          | Cadastro cria empresa, login, rotas protegidas                 | Auth.js, sessão, middleware/proxy, bcrypt, multi-tenant                |
 | 5 · Empréstimos   | Retirada com vários itens, devolução parcial, termo imprimível | `useFieldArray`, transações, union types                               |

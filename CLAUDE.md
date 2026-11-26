@@ -9,5 +9,7 @@ SaaS de almoxarifado: a empresa cadastra materiais e colaboradores e registra re
 - Plano e fases: `docs/plano.md`
 - Regras de negócio ficam em `src/services/` (sem React), pensando numa futura API em Java.
 - Toda consulta ao banco filtra por `empresaId` da sessão (multi-empresa).
+- Banco: `npm run db:start` (Postgres local), `db:migrate`, `db:seed`, `db:studio`. Mudou o schema → `npm run db:migrate`.
+- Next 16 com Cache Components: páginas que leem o banco precisam de `loading.tsx` na própria pasta; consultas passam por `empresaAtualId()` (que chama `connection()`).
 - Antes de commitar: `npm run lint`, `npm run typecheck`, `npm run format:check`.
 - Commits e PRs só em nome do autor: **não** adicionar `Co-Authored-By` nem rodapé de "Generated with Claude Code".

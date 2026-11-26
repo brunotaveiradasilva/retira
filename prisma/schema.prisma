@@ -1,0 +1,134 @@
+// Schema do Retira: cada `model` vira uma tabela no Postgres e um tipo TypeScript no código.
+// Depois de mudar este arquivo: `npm run db:migrate` (cria a migration e regenera o client).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- enums: viram union types no TypeScript ----------
+
+enum Controle {
+  UNITARIO // 1 registro = 1 objeto (furadeira com patrimônio)
+  QUANTIDADE // 1 registro = várias unidades iguais (50 luvas)
+}
+
+enum EstadoMaterial {
+  BOM
+  DANIFICADO
+  MANUTENCAO
+  BAIXADO
+}
+
+enum StatusEmprestimo {
+  ABERTO
+  PARCIAL
+  DEVOLVIDO
+}
+
+// ---------- tabelas ----------
+// Convenção: no código camelCase (empresaId), no banco snake_case (empresa_id) via @map.
+// Isso deixa o banco no padrão que uma futura API em Java (JPA) também espera.
+
+model Empresa {
+  id       String   @id @default(cuid())
+  nome     String
+  cnpj     String?  @unique
+  criadoEm DateTime @default(now()) @map("criado_em")
+
+  // Lados "1 → N" das relações: não viram coluna, servem para navegar nos dados.
+  tipos         TipoMaterial[]
+  materiais     Material[]
+  colaboradores Colaborador[]
+  emprestimos   Emprestimo[]
+
+  @@map("empresas")
+}
+
+model TipoMaterial {
+  id        String  @id @default(cuid())
+  nome      String
+  empresaId String  @map("empresa_id")
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  materiais Material[]
+
+  @@unique([empresaId, nome]) // não repete "EPIs" dentro da mesma empresa
+  @@map("tipos_material")
+}
+
+model Material {
+  id         String         @id @default(cuid())
+  nome       String
+  codigo     String? // patrimônio / código interno
+  controle   Controle       @default(UNITARIO)
+  quantidade Int            @default(1)
+  estado     EstadoMaterial @default(BOM)
+  criadoEm   DateTime       @default(now()) @map("criado_em")
+
+  tipoId    String       @map("tipo_id")
+  tipo      TipoMaterial @relation(fields: [tipoId], references: [id])
+  empresaId String       @map("empresa_id")
+  empresa   Empresa      @relation(fields: [empresaId], references: [id])
+
+  itens ItemEmprestimo[]
+
+  @@unique([empresaId, codigo]) // código único por empresa (vários sem código é ok)
+  @@index([empresaId])
+  @@map("materiais")
+}
+
+model Colaborador {
+  id        String   @id @default(cuid())
+  nome      String
+  matricula String?
+  setor     String?
+  telefone  String?
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  empresaId String  @map("empresa_id")
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  emprestimos Emprestimo[]
+
+  @@index([empresaId])
+  @@map("colaboradores")
+}
+
+model Emprestimo {
+  id                String           @id @default(cuid())
+  retiradoEm        DateTime         @default(now()) @map("retirado_em")
+  previsaoDevolucao DateTime?        @map("previsao_devolucao")
+  status            StatusEmprestimo @default(ABERTO)
+  observacao        String?
+
+  colaboradorId String      @map("colaborador_id")
+  colaborador   Colaborador @relation(fields: [colaboradorId], references: [id])
+  empresaId     String      @map("empresa_id")
+  empresa       Empresa     @relation(fields: [empresaId], references: [id])
+
+  itens ItemEmprestimo[]
+
+  @@index([empresaId, status])
+  @@map("emprestimos")
+}
+
+model ItemEmprestimo {
+  id          String    @id @default(cuid())
+  quantidade  Int       @default(1)
+  devolvidoEm DateTime? @map("devolvido_em")
+
+  // onDelete: Cascade → apagar o empréstimo apaga os itens dele junto.
+  emprestimoId String     @map("emprestimo_id")
+  emprestimo   Emprestimo @relation(fields: [emprestimoId], references: [id], onDelete: Cascade)
+  materialId   String     @map("material_id")
+  material     Material   @relation(fields: [materialId], references: [id])
+
+  @@index([materialId])
+  @@map("itens_emprestimo")
+}

@@ -5,45 +5,39 @@ import { PageHeader } from "@/components/app/page-header";
 import { EstadoBadge } from "@/components/app/badges";
 import { ListaEmprestimos } from "@/components/app/lista-emprestimos";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buscarMaterial, listarEmprestimos } from "@/lib/consultas";
+import { agora } from "@/lib/empresa-atual";
 import {
-  buscarMaterial,
-  buscarTipo,
-  emprestimosDoMaterial,
   estaAberto,
-  listarMateriais,
   quantidadeDisponivel,
-  quantidadeEmprestada,
-} from "@/lib/consultas";
+  unidadesPendentes,
+} from "@/lib/regras";
 
-// A pasta [id] é uma ROTA DINÂMICA: /materiais/m1, /materiais/m2... caem todas aqui.
+// Fase 1 tinha generateStaticParams aqui: os ids eram fixos e o Next gerava as páginas no build.
+// Agora os materiais vêm do banco e mudam a qualquer hora, então a página é montada
+// a cada acesso. O loading.tsx desta pasta cobre a espera.
 
-// Diz ao Next quais ids existem, pra ele gerar essas páginas já no build.
-// (Com Cache Components ligado, sem isso teríamos que usar <Suspense> ao ler params.)
-export function generateStaticParams() {
-  return listarMateriais().map((material) => ({ id: material.id }));
-}
-
-// O título da aba muda conforme o material.
 export async function generateMetadata({
   params,
 }: PageProps<"/materiais/[id]">) {
   const { id } = await params;
-  return { title: buscarMaterial(id)?.nome ?? "Material" };
+  const material = await buscarMaterial(id);
+  return { title: material?.nome ?? "Material" };
 }
 
-// No Next 15+ o params é uma Promise: por isso a página é async e usamos await.
 export default async function MaterialPage({
   params,
 }: PageProps<"/materiais/[id]">) {
   const { id } = await params;
-  const material = buscarMaterial(id);
-
-  // id que não existe (ex.: /materiais/xyz) → página 404.
-  // Depois deste if, o TypeScript sabe que `material` não é undefined.
+  const material = await buscarMaterial(id);
   if (!material) notFound();
 
-  const historico = emprestimosDoMaterial(material.id);
+  const [hoje, historico] = await Promise.all([
+    agora(),
+    listarEmprestimos({ materialId: material.id }),
+  ]);
   const abertos = historico.filter(estaAberto);
+  const emprestado = unidadesPendentes(abertos, material.id);
 
   return (
     <>
@@ -57,7 +51,7 @@ export default async function MaterialPage({
           </Link>
         }
         titulo={material.nome}
-        descricao={[material.codigo, buscarTipo(material.tipoId)?.nome]
+        descricao={[material.codigo, material.tipo.nome]
           .filter(Boolean)
           .join(" · ")}
         acoes={<EstadoBadge estado={material.estado} />}
@@ -65,14 +59,18 @@ export default async function MaterialPage({
 
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <Info rotulo="Total" valor={material.quantidade} />
-        <Info rotulo="Emprestado" valor={quantidadeEmprestada(material.id)} />
-        <Info rotulo="Disponível" valor={quantidadeDisponivel(material)} />
+        <Info rotulo="Emprestado" valor={emprestado} />
+        <Info
+          rotulo="Disponível"
+          valor={quantidadeDisponivel(material, emprestado)}
+        />
       </div>
 
       <section className="mb-8">
         <h2 className="mb-3 font-medium">Com quem está agora</h2>
         <ListaEmprestimos
           emprestimos={abertos}
+          hoje={hoje}
           vazio="Ninguém está com este material agora."
         />
       </section>
@@ -81,6 +79,7 @@ export default async function MaterialPage({
         <h2 className="mb-3 font-medium">Histórico</h2>
         <ListaEmprestimos
           emprestimos={historico}
+          hoje={hoje}
           vazio="Este material nunca foi emprestado."
         />
       </section>
@@ -88,7 +87,6 @@ export default async function MaterialPage({
   );
 }
 
-// Componente pequeno usado só nesta página: pode ficar no mesmo arquivo.
 function Info({ rotulo, valor }: { rotulo: string; valor: number }) {
   return (
     <Card size="sm">

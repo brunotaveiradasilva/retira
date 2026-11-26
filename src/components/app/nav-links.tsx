@@ -2,6 +2,7 @@
 // ↑ Este componente precisa saber a URL atual (usePathname), e hooks só rodam no navegador.
 // Por isso ele é um Client Component. O resto da barra lateral continua no servidor.
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -31,9 +32,27 @@ type NavLinksProps = {
   direcao?: "vertical" | "horizontal";
 };
 
+// O menu exportado. Em rotas como /materiais/[id] o endereço só é conhecido quando alguém
+// acessa, então o Next pede um <Suspense> em volta de quem lê a URL (usePathname).
+// Enquanto isso, o fallback desenha o mesmo menu sem nenhum item aceso.
 export function NavLinks({ direcao = "vertical" }: NavLinksProps) {
-  const pathname = usePathname();
+  return (
+    <Suspense fallback={<Menu direcao={direcao} pathname={null} />}>
+      <MenuComRotaAtual direcao={direcao} />
+    </Suspense>
+  );
+}
 
+function MenuComRotaAtual({ direcao = "vertical" }: NavLinksProps) {
+  const pathname = usePathname();
+  return <Menu direcao={direcao} pathname={pathname} />;
+}
+
+// Só desenha: recebe a rota atual (ou null) por prop.
+function Menu({
+  direcao = "vertical",
+  pathname,
+}: NavLinksProps & { pathname: string | null }) {
   return (
     <nav
       className={cn(
@@ -44,7 +63,8 @@ export function NavLinks({ direcao = "vertical" }: NavLinksProps) {
       {itens.map((item) => {
         // Ativo na própria página e nas de dentro: /materiais/m1 acende "Materiais".
         const ativo =
-          pathname === item.href || pathname.startsWith(item.href + "/");
+          pathname !== null &&
+          (pathname === item.href || pathname.startsWith(item.href + "/"));
         // Componente guardado numa variável precisa começar com letra maiúscula pra virar <Icone />.
         const Icone = item.icone;
 

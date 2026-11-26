@@ -8,16 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  buscarColaborador,
-  buscarMaterial,
-  estaAtrasado,
-} from "@/lib/consultas";
+import type { EmprestimoDetalhado } from "@/lib/consultas";
 import { formatarData } from "@/lib/formatar";
-import type { Emprestimo } from "@/types";
+import { estaAtrasado } from "@/lib/regras";
 
 type ListaEmprestimosProps = {
-  emprestimos: Emprestimo[];
+  /** Empréstimos já com colaborador e itens incluídos (veja `comDetalhes` em consultas.ts). */
+  emprestimos: EmprestimoDetalhado[];
+  /** Data de referência para saber o que está atrasado. */
+  hoje: Date;
   /** Esconde a coluna do colaborador (na página do próprio colaborador ela é redundante). */
   semColaborador?: boolean;
   /** Mensagem quando a lista está vazia. */
@@ -25,9 +24,11 @@ type ListaEmprestimosProps = {
 };
 
 // Componente reaproveitado em 4 telas: painel, empréstimos, material e colaborador.
-// É pra isso que servem componentes: escrever uma vez, usar em vários lugares.
+// Na fase 1 ele buscava o colaborador e cada material um por um. Agora os dados chegam
+// prontos numa consulta só (include), e o componente só desenha.
 export function ListaEmprestimos({
   emprestimos,
+  hoje,
   semColaborador = false,
   vazio = "Nenhum empréstimo.",
 }: ListaEmprestimosProps) {
@@ -53,51 +54,39 @@ export function ListaEmprestimos({
         </TableHeader>
         <TableBody>
           {emprestimos.map((emprestimo) => {
-            const colaborador = buscarColaborador(emprestimo.colaboradorId);
-            const atrasado = estaAtrasado(emprestimo);
+            const atrasado = estaAtrasado(emprestimo, hoje);
             return (
               <TableRow key={emprestimo.id}>
                 {!semColaborador && (
                   <TableCell>
-                    {colaborador ? (
-                      <Link
-                        href={`/colaboradores/${colaborador.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {colaborador.nome}
-                      </Link>
-                    ) : (
-                      "—"
-                    )}
+                    <Link
+                      href={`/colaboradores/${emprestimo.colaborador.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {emprestimo.colaborador.nome}
+                    </Link>
                   </TableCell>
                 )}
                 <TableCell className="whitespace-normal">
                   <ul className="flex flex-col gap-0.5">
-                    {emprestimo.itens.map((item) => {
-                      const material = buscarMaterial(item.materialId);
-                      return (
-                        <li
-                          key={item.materialId}
-                          className={
-                            item.devolvidoEm
-                              ? "text-muted-foreground line-through"
-                              : ""
-                          }
+                    {emprestimo.itens.map((item) => (
+                      <li
+                        key={item.id}
+                        className={
+                          item.devolvidoEm
+                            ? "text-muted-foreground line-through"
+                            : ""
+                        }
+                      >
+                        {item.quantidade > 1 && `${item.quantidade}× `}
+                        <Link
+                          href={`/materiais/${item.material.id}`}
+                          className="hover:underline"
                         >
-                          {item.quantidade > 1 && `${item.quantidade}× `}
-                          {material ? (
-                            <Link
-                              href={`/materiais/${material.id}`}
-                              className="hover:underline"
-                            >
-                              {material.nome}
-                            </Link>
-                          ) : (
-                            "material removido"
-                          )}
-                        </li>
-                      );
-                    })}
+                          {item.material.nome}
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 </TableCell>
                 <TableCell className="hidden tabular-nums md:table-cell">
