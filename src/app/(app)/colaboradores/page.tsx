@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { AvatarIniciais } from "@/components/app/avatar-iniciais";
 import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { listarColaboradores } from "@/lib/consultas";
 import { agora } from "@/lib/empresa-atual";
@@ -24,9 +24,9 @@ export default async function ColaboradoresPage() {
         titulo="Colaboradores"
         descricao="Quem pode retirar material do almoxarifado"
         acoes={
-          <Button disabled>
+          <Link href="/colaboradores/novo" className={buttonVariants()}>
             <Plus aria-hidden="true" /> Novo colaborador
-          </Button>
+          </Link>
         }
       />
 

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { EstadoBadge } from "@/components/app/badges";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -33,9 +33,9 @@ export default async function MateriaisPage() {
         titulo="Materiais"
         descricao={`${materiais.length} materiais cadastrados`}
         acoes={
-          <Button disabled>
+          <Link href="/materiais/novo" className={buttonVariants()}>
             <Plus aria-hidden="true" /> Novo material
-          </Button>
+          </Link>
         }
       />
 

@@ -19,9 +19,9 @@ Abra http://localhost:3000.
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Prisma 7 + PostgreSQL
+Next.js 16 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Prisma 7 + PostgreSQL · Zod 4 · React Hook Form
 
-Próximas fases: Zod + Server Actions · Auth.js · Vercel + Neon.
+Próximas fases: Auth.js · empréstimos · Vercel + Neon.
 
 ## Documentação
 
@@ -29,3 +29,4 @@ Próximas fases: Zod + Server Actions · Auth.js · Vercel + Neon.
 - [Fase 0 — o que é cada arquivo](docs/fase-0.md)
 - [Fase 1 — telas com dados falsos](docs/fase-1.md)
 - [Fase 2 — banco de dados com Prisma](docs/fase-2.md)
+- [Fase 3 — cadastros com Server Actions, Zod e React Hook Form](docs/fase-3.md)
