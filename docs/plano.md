@@ -50,16 +50,16 @@ Emprestimo 1──N ItemEmprestimo N──1 Material
 
 ## Fases
 
-| Fase            | Entrega                                                        | O que se aprende                                                       |
-| --------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| 0 · Setup       | Projeto criado, shadcn, Prettier, logo                         | Estrutura do Next, tsconfig, ESLint/Prettier                           |
-| 1 · Telas mock  | Layout com sidebar, listas com dados falsos                    | Componentes, props tipadas, `.map`, rotas e layouts, `[id]`            |
-| 2 · Banco       | Prisma + Neon, migrations, seed                                | Server Components assíncronos, tipos gerados                           |
-| 3 · CRUD        | Tipos, materiais, colaboradores                                | Server Actions, Zod, React Hook Form, `"use client"`, `revalidatePath` |
-| 4 · Auth        | Cadastro cria empresa, login, rotas protegidas                 | Auth.js, sessão, middleware/proxy, bcrypt, multi-tenant                |
-| 5 · Empréstimos | Retirada com vários itens, devolução parcial, termo imprimível | `useFieldArray`, transações, union types                               |
-| 6 · Painel      | Cards, atrasados, histórico                                    | Agregações, `searchParams`, `loading.tsx`, `error.tsx`                 |
-| 7 · Qualidade   | Vitest, Playwright, CI, deploy Vercel                          | Testes, env vars, GitHub Actions                                       |
-| 8 · Java        | API Spring Boot no mesmo Postgres                              | Spring Boot, JPA, REST                                                 |
+| Fase              | Entrega                                                        | O que se aprende                                                       |
+| ----------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 0 · Setup ✅      | Projeto criado, shadcn, Prettier, logo                         | Estrutura do Next, tsconfig, ESLint/Prettier                           |
+| 1 · Telas mock ✅ | Layout com sidebar, listas com dados falsos                    | Componentes, props tipadas, `.map`, rotas e layouts, `[id]`            |
+| 2 · Banco         | Prisma + Neon, migrations, seed                                | Server Components assíncronos, tipos gerados                           |
+| 3 · CRUD          | Tipos, materiais, colaboradores                                | Server Actions, Zod, React Hook Form, `"use client"`, `revalidatePath` |
+| 4 · Auth          | Cadastro cria empresa, login, rotas protegidas                 | Auth.js, sessão, middleware/proxy, bcrypt, multi-tenant                |
+| 5 · Empréstimos   | Retirada com vários itens, devolução parcial, termo imprimível | `useFieldArray`, transações, union types                               |
+| 6 · Painel        | Cards, atrasados, histórico                                    | Agregações, `searchParams`, `loading.tsx`, `error.tsx`                 |
+| 7 · Qualidade     | Vitest, Playwright, CI, deploy Vercel                          | Testes, env vars, GitHub Actions                                       |
+| 8 · Java          | API Spring Boot no mesmo Postgres                              | Spring Boot, JPA, REST                                                 |
 
 Ciclo de cada feature: **schema Zod → service → action → formulário → lista/detalhe → teste do service**.
