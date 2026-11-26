@@ -55,6 +55,18 @@ export async function listarEmprestimos(
   });
 }
 
+// ---------- tipos ----------
+
+export async function listarTipos() {
+  const empresaId = await empresaAtualId();
+  return prisma.tipoMaterial.findMany({
+    where: { empresaId },
+    // _count: o Prisma conta os materiais de cada tipo sem trazer os materiais.
+    include: { _count: { select: { materiais: true } } },
+    orderBy: { nome: "asc" },
+  });
+}
+
 // ---------- materiais ----------
 
 export async function listarMateriais() {

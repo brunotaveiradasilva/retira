@@ -9,6 +9,7 @@ import {
   ArrowLeftRight,
   LayoutDashboard,
   Package,
+  Tags,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +24,7 @@ type ItemDeMenu = {
 const itens: ItemDeMenu[] = [
   { href: "/painel", rotulo: "Painel", icone: LayoutDashboard },
   { href: "/materiais", rotulo: "Materiais", icone: Package },
+  { href: "/tipos", rotulo: "Tipos", icone: Tags },
   { href: "/colaboradores", rotulo: "Colaboradores", icone: Users },
   { href: "/emprestimos", rotulo: "Empréstimos", icone: ArrowLeftRight },
 ];

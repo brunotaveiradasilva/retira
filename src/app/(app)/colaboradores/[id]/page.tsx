@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Phone } from "lucide-react";
+import { ArrowLeft, Pencil, Phone } from "lucide-react";
+import {
+  alterarAtivoAction,
+  excluirColaboradorAction,
+} from "@/actions/colaboradores";
 import { AvatarIniciais } from "@/components/app/avatar-iniciais";
+import { BotaoConfirmar } from "@/components/app/botao-confirmar";
+import { buttonVariants } from "@/components/ui/button";
 import { ListaEmprestimos } from "@/components/app/lista-emprestimos";
 import { Badge } from "@/components/ui/badge";
 import { buscarColaborador, listarEmprestimos } from "@/lib/consultas";
@@ -37,9 +43,9 @@ export default async function ColaboradorPage({
         <ArrowLeft className="size-4" aria-hidden="true" /> Colaboradores
       </Link>
 
-      <div className="mb-8 flex items-center gap-4">
+      <div className="mb-8 flex flex-wrap items-center gap-4">
         <AvatarIniciais nome={colaborador.nome} className="size-14 text-lg" />
-        <div>
+        <div className="flex-1">
           <h1 className="flex items-center gap-2 text-2xl font-medium tracking-tight">
             {colaborador.nome}
             {!colaborador.ativo && <Badge variant="outline">Inativo</Badge>}
@@ -58,6 +64,52 @@ export default async function ColaboradorPage({
               {colaborador.telefone}
             </p>
           )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/colaboradores/${colaborador.id}/editar`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Pencil aria-hidden="true" /> Editar
+          </Link>
+          <BotaoConfirmar
+            acao={alterarAtivoAction.bind(
+              null,
+              colaborador.id,
+              !colaborador.ativo,
+            )}
+            titulo={
+              colaborador.ativo
+                ? `Desativar ${colaborador.nome}?`
+                : `Reativar ${colaborador.nome}?`
+            }
+            descricao={
+              colaborador.ativo
+                ? abertos.length > 0
+                  ? `Ainda está com material (${abertos.length} empréstimo(s) em aberto). Desativar não devolve nada: lembre de cobrar.`
+                  : "Ele(a) deixa de aparecer como opção em novas retiradas. Dá pra reativar depois."
+                : "Ele(a) volta a poder retirar material."
+            }
+            rotulo={colaborador.ativo ? "Desativar" : "Reativar"}
+            destrutivo={false}
+            variante="outline"
+            tamanho="sm"
+          />
+          <BotaoConfirmar
+            acao={excluirColaboradorAction.bind(null, colaborador.id)}
+            titulo={`Excluir ${colaborador.nome}?`}
+            descricao={
+              abertos.length + devolvidos.length > 0
+                ? "Tem empréstimos no histórico, então não pode ser excluído. Use Desativar."
+                : "Esta ação não pode ser desfeita."
+            }
+            rotulo="Excluir"
+            irPara="/colaboradores"
+            bloqueado={abertos.length + devolvidos.length > 0}
+            variante="outline"
+            tamanho="sm"
+          />
         </div>
       </div>
 
