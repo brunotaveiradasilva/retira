@@ -13,15 +13,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  buscarTipo,
   listarMateriais,
-  quantidadeDisponivel,
+  unidadesEmprestadasPorMaterial,
 } from "@/lib/consultas";
+import { quantidadeDisponivel } from "@/lib/regras";
 
 export const metadata: Metadata = { title: "Materiais" };
 
-export default function MateriaisPage() {
-  const materiais = listarMateriais();
+export default async function MateriaisPage() {
+  // Duas consultas independentes: em paralelo.
+  const [materiais, emprestadas] = await Promise.all([
+    listarMateriais(),
+    unidadesEmprestadasPorMaterial(),
+  ]);
 
   return (
     <>
@@ -47,7 +51,10 @@ export default function MateriaisPage() {
           </TableHeader>
           <TableBody>
             {materiais.map((material) => {
-              const disponivel = quantidadeDisponivel(material);
+              const disponivel = quantidadeDisponivel(
+                material,
+                emprestadas.get(material.id) ?? 0,
+              );
               return (
                 <TableRow key={material.id}>
                   <TableCell>
@@ -63,8 +70,9 @@ export default function MateriaisPage() {
                       </div>
                     )}
                   </TableCell>
+                  {/* material.tipo veio junto pelo include: { tipo: true } */}
                   <TableCell className="hidden sm:table-cell">
-                    {buscarTipo(material.tipoId)?.nome}
+                    {material.tipo.nome}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     <span

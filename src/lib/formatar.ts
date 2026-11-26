@@ -6,7 +6,8 @@ const formatoData = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 });
 
-export function formatarData(data: Date | undefined): string {
+// Campo opcional no banco chega como null (não undefined). Aceitamos os dois.
+export function formatarData(data: Date | null | undefined): string {
   return data ? formatoData.format(data) : "—";
 }
 

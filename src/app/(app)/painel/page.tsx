@@ -10,33 +10,32 @@ import {
 import { ListaEmprestimos } from "@/components/app/lista-emprestimos";
 import { PageHeader } from "@/components/app/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  estaAberto,
-  estaAtrasado,
-  listarEmprestimos,
-  resumoDoPainel,
-} from "@/lib/consultas";
-import { HOJE } from "@/lib/mock-data";
+import { listarEmprestimos, resumoDoPainel } from "@/lib/consultas";
+import { agora } from "@/lib/empresa-atual";
 import { formatarData } from "@/lib/formatar";
+import { estaAtrasado } from "@/lib/regras";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Painel" };
 
-export default function PainelPage() {
-  const resumo = resumoDoPainel();
-  const emprestimos = listarEmprestimos();
-  const atrasados = emprestimos.filter((emprestimo) =>
-    estaAtrasado(emprestimo),
+// async: a página espera o banco responder antes de desenhar.
+// Enquanto isso, o (app)/loading.tsx aparece na tela.
+export default async function PainelPage() {
+  const hoje = await agora();
+  const [resumo, abertos] = await Promise.all([
+    resumoDoPainel(hoje),
+    listarEmprestimos({ abertos: true }),
+  ]);
+  const atrasados = abertos.filter((emprestimo) =>
+    estaAtrasado(emprestimo, hoje),
   );
-  const emDia = emprestimos.filter(
-    (emprestimo) => estaAberto(emprestimo) && !estaAtrasado(emprestimo),
-  );
+  const emDia = abertos.filter((emprestimo) => !estaAtrasado(emprestimo, hoje));
 
   return (
     <>
       <PageHeader
         titulo="Painel"
-        descricao={`Situação em ${formatarData(HOJE)}`}
+        descricao={`Situação em ${formatarData(hoje)}`}
       />
 
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -72,7 +71,11 @@ export default function PainelPage() {
             </span>
           )}
         </h2>
-        <ListaEmprestimos emprestimos={atrasados} vazio="Nenhum atraso." />
+        <ListaEmprestimos
+          emprestimos={atrasados}
+          hoje={hoje}
+          vazio="Nenhum atraso."
+        />
       </section>
 
       <section>
@@ -87,6 +90,7 @@ export default function PainelPage() {
         </div>
         <ListaEmprestimos
           emprestimos={emDia}
+          hoje={hoje}
           vazio="Nenhum empréstimo aberto."
         />
       </section>

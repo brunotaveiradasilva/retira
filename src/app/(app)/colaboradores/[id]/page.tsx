@@ -4,34 +4,29 @@ import { ArrowLeft, Phone } from "lucide-react";
 import { AvatarIniciais } from "@/components/app/avatar-iniciais";
 import { ListaEmprestimos } from "@/components/app/lista-emprestimos";
 import { Badge } from "@/components/ui/badge";
-import {
-  buscarColaborador,
-  emprestimosDoColaborador,
-  estaAberto,
-  listarColaboradores,
-} from "@/lib/consultas";
-
-export function generateStaticParams() {
-  return listarColaboradores().map((colaborador) => ({ id: colaborador.id }));
-}
+import { buscarColaborador, listarEmprestimos } from "@/lib/consultas";
+import { agora } from "@/lib/empresa-atual";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/colaboradores/[id]">) {
   const { id } = await params;
-  return { title: buscarColaborador(id)?.nome ?? "Colaborador" };
+  const colaborador = await buscarColaborador(id);
+  return { title: colaborador?.nome ?? "Colaborador" };
 }
 
 export default async function ColaboradorPage({
   params,
 }: PageProps<"/colaboradores/[id]">) {
   const { id } = await params;
-  const colaborador = buscarColaborador(id);
+  const colaborador = await buscarColaborador(id);
   if (!colaborador) notFound();
 
-  const historico = emprestimosDoColaborador(colaborador.id);
-  const abertos = historico.filter(estaAberto);
-  const devolvidos = historico.filter((emprestimo) => !estaAberto(emprestimo));
+  const [hoje, abertos, devolvidos] = await Promise.all([
+    agora(),
+    listarEmprestimos({ colaboradorId: colaborador.id, abertos: true }),
+    listarEmprestimos({ colaboradorId: colaborador.id, abertos: false }),
+  ]);
 
   return (
     <>
@@ -70,6 +65,7 @@ export default async function ColaboradorPage({
         <h2 className="mb-3 font-medium">Com ele(a) agora</h2>
         <ListaEmprestimos
           emprestimos={abertos}
+          hoje={hoje}
           semColaborador
           vazio="Nenhum material com este colaborador."
         />
@@ -79,6 +75,7 @@ export default async function ColaboradorPage({
         <h2 className="mb-3 font-medium">Já devolvidos</h2>
         <ListaEmprestimos
           emprestimos={devolvidos}
+          hoje={hoje}
           semColaborador
           vazio="Nenhuma devolução ainda."
         />

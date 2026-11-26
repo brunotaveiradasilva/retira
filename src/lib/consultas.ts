@@ -1,102 +1,159 @@
-import type { Colaborador, Emprestimo, Material, TipoMaterial } from "@/types";
-import {
-  HOJE,
-  colaboradores,
-  emprestimos,
-  materiais,
-  tipos,
-} from "./mock-data";
+import "server-only";
+import type { Prisma } from "@/generated/prisma/client";
+import { empresaAtualId } from "./empresa-atual";
+import { prisma } from "./prisma";
 
-// Funções que "consultam" os dados falsos.
-// As telas só chamam estas funções, nunca o array direto. Na fase 2 trocamos o
-// corpo delas por consultas do Prisma e as telas nem percebem a diferença.
+// As telas continuam chamando listarMateriais(), buscarColaborador()...
+// O que mudou da fase 1 pra cá: o corpo das funções agora consulta o Postgres,
+// e todas viraram async (banco demora; quem chama precisa de await).
+//
+// REGRA DE OURO: toda consulta filtra por empresaId. Uma empresa nunca vê dados de outra.
 
-// ---------- buscas simples ----------
+// ---------- empréstimos ----------
 
-// Retorno "X | undefined": o .find pode não achar nada, e o TypeScript obriga a tela a tratar isso.
-export function buscarMaterial(id: string): Material | undefined {
-  return materiais.find((material) => material.id === id);
+// O que trazer junto com cada empréstimo (o "JOIN" do Prisma).
+// `satisfies` confere o formato sem perder o tipo exato do objeto.
+const comDetalhes = {
+  colaborador: true,
+  itens: { include: { material: true } },
+} satisfies Prisma.EmprestimoInclude;
+
+/** Empréstimo com colaborador e itens (cada item com seu material). */
+export type EmprestimoDetalhado = Prisma.EmprestimoGetPayload<{
+  include: typeof comDetalhes;
+}>;
+
+type FiltroEmprestimos = {
+  colaboradorId?: string;
+  materialId?: string;
+  /** true = só abertos/parciais, false = só devolvidos, vazio = todos */
+  abertos?: boolean;
+};
+
+export async function listarEmprestimos(
+  filtro: FiltroEmprestimos = {},
+): Promise<EmprestimoDetalhado[]> {
+  const empresaId = await empresaAtualId();
+
+  return prisma.emprestimo.findMany({
+    where: {
+      empresaId,
+      colaboradorId: filtro.colaboradorId,
+      // Empréstimos que têm PELO MENOS UM item deste material.
+      itens: filtro.materialId
+        ? { some: { materialId: filtro.materialId } }
+        : undefined,
+      status:
+        filtro.abertos === true
+          ? { not: "DEVOLVIDO" }
+          : filtro.abertos === false
+            ? "DEVOLVIDO"
+            : undefined,
+    },
+    include: comDetalhes,
+    orderBy: { retiradoEm: "desc" },
+  });
 }
 
-export function buscarColaborador(id: string): Colaborador | undefined {
-  return colaboradores.find((colaborador) => colaborador.id === id);
+// ---------- materiais ----------
+
+export async function listarMateriais() {
+  const empresaId = await empresaAtualId();
+  return prisma.material.findMany({
+    where: { empresaId },
+    include: { tipo: true },
+    orderBy: { nome: "asc" },
+  });
 }
 
-export function buscarTipo(id: string): TipoMaterial | undefined {
-  return tipos.find((tipo) => tipo.id === id);
+// O tipo de retorno sai da própria função: "um item da lista que listarMateriais devolve".
+export type MaterialComTipo = Awaited<
+  ReturnType<typeof listarMateriais>
+>[number];
+
+// findFirst (e não findUnique) porque filtramos por id E empresaId:
+// um id de outra empresa simplesmente não é encontrado.
+export async function buscarMaterial(id: string) {
+  const empresaId = await empresaAtualId();
+  return prisma.material.findFirst({
+    where: { id, empresaId },
+    include: { tipo: true },
+  });
 }
 
-export function listarMateriais(): Material[] {
-  // [...array] cria uma cópia antes de ordenar: .sort altera o array original.
-  return [...materiais].sort((a, b) => a.nome.localeCompare(b.nome));
-}
-
-export function listarColaboradores(): Colaborador[] {
-  return [...colaboradores].sort((a, b) => a.nome.localeCompare(b.nome));
-}
-
-export function listarEmprestimos(): Emprestimo[] {
-  // Mais recentes primeiro.
-  return [...emprestimos].sort(
-    (a, b) => b.retiradoEm.getTime() - a.retiradoEm.getTime(),
+/**
+ * Quantas unidades de cada material estão fora agora.
+ * groupBy = GROUP BY do SQL: agrupa os itens por material e soma as quantidades.
+ */
+export async function unidadesEmprestadasPorMaterial(): Promise<
+  Map<string, number>
+> {
+  const empresaId = await empresaAtualId();
+  const grupos = await prisma.itemEmprestimo.groupBy({
+    by: ["materialId"],
+    where: {
+      devolvidoEm: null,
+      emprestimo: { empresaId, status: { not: "DEVOLVIDO" } },
+    },
+    _sum: { quantidade: true },
+  });
+  // Map: estrutura chave → valor. map.get("id") devolve a soma (ou undefined).
+  return new Map(
+    grupos.map((grupo) => [grupo.materialId, grupo._sum.quantidade ?? 0]),
   );
 }
 
-// ---------- regras ----------
+// ---------- colaboradores ----------
 
-export function estaAberto(emprestimo: Emprestimo): boolean {
-  return emprestimo.status !== "DEVOLVIDO";
+export async function listarColaboradores() {
+  const empresaId = await empresaAtualId();
+  return prisma.colaborador.findMany({
+    where: { empresaId },
+    // Traz junto só os empréstimos em aberto, com os itens: é o que o cartão mostra.
+    include: {
+      emprestimos: {
+        where: { status: { not: "DEVOLVIDO" } },
+        include: { itens: true },
+      },
+    },
+    orderBy: [{ ativo: "desc" }, { nome: "asc" }],
+  });
 }
 
-export function estaAtrasado(
-  emprestimo: Emprestimo,
-  hoje: Date = HOJE,
-): boolean {
-  if (!estaAberto(emprestimo) || !emprestimo.previsaoDevolucao) return false;
-  return emprestimo.previsaoDevolucao < hoje;
+export async function buscarColaborador(id: string) {
+  const empresaId = await empresaAtualId();
+  return prisma.colaborador.findFirst({ where: { id, empresaId } });
 }
 
-/** Quantas unidades deste material estão fora agora (itens ainda não devolvidos). */
-export function quantidadeEmprestada(materialId: string): number {
-  let total = 0;
-  for (const emprestimo of emprestimos.filter(estaAberto)) {
-    for (const item of emprestimo.itens) {
-      if (item.materialId === materialId && !item.devolvidoEm) {
-        total += item.quantidade;
-      }
-    }
-  }
-  return total;
-}
+// ---------- painel ----------
 
-export function quantidadeDisponivel(material: Material): number {
-  if (material.estado !== "BOM") return 0;
-  return material.quantidade - quantidadeEmprestada(material.id);
-}
+export async function resumoDoPainel(hoje: Date) {
+  const empresaId = await empresaAtualId();
+  const abertos = { empresaId, status: { not: "DEVOLVIDO" as const } };
 
-/** Empréstimos (de qualquer status) que envolvem este material. */
-export function emprestimosDoMaterial(materialId: string): Emprestimo[] {
-  return listarEmprestimos().filter((emprestimo) =>
-    emprestimo.itens.some((item) => item.materialId === materialId),
-  );
-}
+  // Promise.all dispara as 4 consultas AO MESMO TEMPO e espera todas.
+  // Uma depois da outra levaria a soma dos tempos; assim leva o tempo da mais lenta.
+  const [emprestimosAbertos, atrasados, unidades, colaboradores] =
+    await Promise.all([
+      prisma.emprestimo.count({ where: abertos }),
+      prisma.emprestimo.count({
+        where: { ...abertos, previsaoDevolucao: { lt: hoje } },
+      }),
+      prisma.itemEmprestimo.aggregate({
+        where: { devolvidoEm: null, emprestimo: abertos },
+        _sum: { quantidade: true },
+      }),
+      prisma.emprestimo.findMany({
+        where: abertos,
+        distinct: ["colaboradorId"],
+        select: { colaboradorId: true },
+      }),
+    ]);
 
-export function emprestimosDoColaborador(colaboradorId: string): Emprestimo[] {
-  return listarEmprestimos().filter(
-    (emprestimo) => emprestimo.colaboradorId === colaboradorId,
-  );
-}
-
-/** Números do painel. */
-export function resumoDoPainel() {
-  const abertos = emprestimos.filter(estaAberto);
   return {
-    emprestimosAbertos: abertos.length,
-    atrasados: abertos.filter((emprestimo) => estaAtrasado(emprestimo)).length,
-    unidadesFora: materiais.reduce(
-      (soma, material) => soma + quantidadeEmprestada(material.id),
-      0,
-    ),
-    colaboradoresComMaterial: new Set(abertos.map((e) => e.colaboradorId)).size,
+    emprestimosAbertos,
+    atrasados,
+    unidadesFora: unidades._sum.quantidade ?? 0,
+    colaboradoresComMaterial: colaboradores.length,
   };
 }

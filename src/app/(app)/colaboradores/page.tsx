@@ -6,17 +6,17 @@ import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  emprestimosDoColaborador,
-  estaAberto,
-  estaAtrasado,
-  listarColaboradores,
-} from "@/lib/consultas";
+import { listarColaboradores } from "@/lib/consultas";
+import { agora } from "@/lib/empresa-atual";
+import { estaAtrasado, unidadesPendentes } from "@/lib/regras";
 
 export const metadata: Metadata = { title: "Colaboradores" };
 
-export default function ColaboradoresPage() {
-  const colaboradores = listarColaboradores();
+export default async function ColaboradoresPage() {
+  const [hoje, colaboradores] = await Promise.all([
+    agora(),
+    listarColaboradores(),
+  ]);
 
   return (
     <>
@@ -32,17 +32,12 @@ export default function ColaboradoresPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {colaboradores.map((colaborador) => {
-          const abertos = emprestimosDoColaborador(colaborador.id).filter(
-            estaAberto,
-          );
+          // colaborador.emprestimos já veio só com os abertos (veja listarColaboradores).
+          const abertos = colaborador.emprestimos;
           const temAtraso = abertos.some((emprestimo) =>
-            estaAtrasado(emprestimo),
+            estaAtrasado(emprestimo, hoje),
           );
-          // Soma só os itens que ainda não voltaram.
-          const itensComEle = abertos
-            .flatMap((emprestimo) => emprestimo.itens)
-            .filter((item) => !item.devolvidoEm)
-            .reduce((soma, item) => soma + item.quantidade, 0);
+          const itensComEle = unidadesPendentes(abertos);
 
           return (
             <Link
