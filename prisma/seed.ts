@@ -3,6 +3,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient } from "../src/generated/prisma/client";
+import { gerarHashDeSenha } from "../src/lib/senha";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -22,12 +23,52 @@ async function main() {
   await prisma.material.deleteMany();
   await prisma.tipoMaterial.deleteMany();
   await prisma.colaborador.deleteMany();
+  await prisma.sessao.deleteMany();
+  await prisma.usuario.deleteMany();
   await prisma.empresa.deleteMany();
 
   const empresa = await prisma.empresa.create({
     data: { nome: "Construtora Exemplo", cnpj: "00.000.000/0001-00" },
   });
   const empresaId = empresa.id;
+
+  // LOGINS DE EXEMPLO (só para desenvolvimento; a tela de login mostra o primeiro).
+  //   admin@exemplo.com  / retira123  → Construtora Exemplo (dados completos)
+  //   oficina@exemplo.com / retira123 → Oficina do Zé (outra empresa, pra testar
+  //                                      que uma empresa não vê os dados da outra)
+  await prisma.usuario.create({
+    data: {
+      nome: "Admin Exemplo",
+      email: "admin@exemplo.com",
+      senhaHash: await gerarHashDeSenha("retira123"),
+      empresaId,
+    },
+  });
+
+  const oficina = await prisma.empresa.create({
+    data: { nome: "Oficina do Zé" },
+  });
+  await prisma.usuario.create({
+    data: {
+      nome: "Zé da Oficina",
+      email: "oficina@exemplo.com",
+      senhaHash: await gerarHashDeSenha("retira123"),
+      empresaId: oficina.id,
+    },
+  });
+  const chaves = await prisma.tipoMaterial.create({
+    data: { nome: "Chaves", empresaId: oficina.id },
+  });
+  await prisma.material.create({
+    data: {
+      nome: "Jogo de chaves combinadas",
+      tipoId: chaves.id,
+      empresaId: oficina.id,
+    },
+  });
+  await prisma.colaborador.create({
+    data: { nome: "Bia Mecânica", setor: "Oficina", empresaId: oficina.id },
+  });
 
   // create devolve o registro criado, com o id gerado pelo banco.
   const ferramentas = await prisma.tipoMaterial.create({

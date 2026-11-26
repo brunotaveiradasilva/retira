@@ -38,7 +38,7 @@ export default function Home() {
       <header className="flex items-center justify-between">
         <Logo size={36} />
         {/* buttonVariants dá a cara de botão a um <Link>: navegação é link, não botão. */}
-        <Link href="/painel" className={buttonVariants({ variant: "outline" })}>
+        <Link href="/login" className={buttonVariants({ variant: "outline" })}>
           Entrar
         </Link>
       </header>
@@ -51,13 +51,16 @@ export default function Home() {
           O Retira organiza o almoxarifado da sua empresa: o que saiu, quem
           retirou e quando precisa voltar.
         </p>
-        <div>
-          <Link href="/painel" className={buttonVariants({ size: "lg" })}>
-            Ver demonstração
+        <div className="flex flex-wrap gap-2">
+          <Link href="/cadastro" className={buttonVariants({ size: "lg" })}>
+            Cadastrar minha empresa
           </Link>
-          <p className="text-muted-foreground mt-2 text-sm">
-            Em construção · fase 1 (dados de exemplo)
-          </p>
+          <Link
+            href="/login"
+            className={buttonVariants({ size: "lg", variant: "ghost" })}
+          >
+            Já tenho conta
+          </Link>
         </div>
       </section>
 

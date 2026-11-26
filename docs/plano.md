@@ -9,7 +9,7 @@ A empresa se cadastra, organiza os materiais por tipo, cadastra os colaboradores
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · React Hook Form + Zod · Prisma 7 + PostgreSQL (local com `prisma dev`, Neon no deploy) · Auth.js · Vercel.
+Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · React Hook Form + Zod · Prisma 7 + PostgreSQL (local com `prisma dev`, Neon no deploy) · login próprio (sessão no banco; Auth.js segue em beta) · Vercel.
 Futuro: API em Java (Spring Boot) no mesmo Postgres.
 
 ## Modelo de dados
@@ -56,7 +56,7 @@ Emprestimo 1──N ItemEmprestimo N──1 Material
 | 1 · Telas mock ✅ | Layout com sidebar, listas com dados falsos                    | Componentes, props tipadas, `.map`, rotas e layouts, `[id]`       |
 | 2 · Banco ✅      | Prisma + Postgres, migrations, seed                            | Server Components assíncronos, tipos gerados                      |
 | 3 · CRUD ✅       | Tipos, materiais, colaboradores                                | Server Actions, Zod, React Hook Form, `"use client"`, `refresh()` |
-| 4 · Auth          | Cadastro cria empresa, login, rotas protegidas                 | Auth.js, sessão, middleware/proxy, bcrypt, multi-tenant           |
+| 4 · Auth ✅       | Cadastro cria empresa, login, rotas protegidas                 | Sessão no banco, cookies, proxy, scrypt, multi-tenant             |
 | 5 · Empréstimos   | Retirada com vários itens, devolução parcial, termo imprimível | `useFieldArray`, transações, union types                          |
 | 6 · Painel        | Cards, atrasados, histórico                                    | Agregações, `searchParams`, `loading.tsx`, `error.tsx`            |
 | 7 · Qualidade     | Vitest, Playwright, CI, deploy Vercel                          | Testes, env vars, GitHub Actions                                  |
