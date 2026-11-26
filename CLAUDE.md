@@ -10,3 +10,4 @@ SaaS de almoxarifado: a empresa cadastra materiais e colaboradores e registra re
 - Regras de negócio ficam em `src/services/` (sem React), pensando numa futura API em Java.
 - Toda consulta ao banco filtra por `empresaId` da sessão (multi-empresa).
 - Antes de commitar: `npm run lint`, `npm run typecheck`, `npm run format:check`.
+- Commits e PRs só em nome do autor: **não** adicionar `Co-Authored-By` nem rodapé de "Generated with Claude Code".
