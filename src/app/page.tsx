@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -36,9 +37,10 @@ export default function Home() {
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-12 px-6 py-16">
       <header className="flex items-center justify-between">
         <Logo size={36} />
-        <Button variant="outline" disabled>
+        {/* buttonVariants dá a cara de botão a um <Link>: navegação é link, não botão. */}
+        <Link href="/painel" className={buttonVariants({ variant: "outline" })}>
           Entrar
-        </Button>
+        </Link>
       </header>
 
       <section className="flex flex-col gap-4">
@@ -50,11 +52,11 @@ export default function Home() {
           retirou e quando precisa voltar.
         </p>
         <div>
-          <Button size="lg" disabled>
-            Criar conta da empresa
-          </Button>
+          <Link href="/painel" className={buttonVariants({ size: "lg" })}>
+            Ver demonstração
+          </Link>
           <p className="text-muted-foreground mt-2 text-sm">
-            Em construção · fase 0
+            Em construção · fase 1 (dados de exemplo)
           </p>
         </div>
       </section>
