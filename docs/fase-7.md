@@ -68,12 +68,44 @@ O servidor da Vercel roda em **UTC** (3 horas à frente de Brasília). Sem cuida
 
 ## 6. Deploy — Vercel + Neon
 
-Já preparado no código:
+**No ar: https://retira-nine.vercel.app**
 
-- `vercel.json`: o build roda `prisma migrate deploy && next build` (o banco de produção recebe as migrations a cada deploy) e o servidor fica em São Paulo (`gru1`).
-- `prisma.config.ts` usa `DIRECT_URL` quando existir (migrations) e o site usa `DATABASE_URL` (com pooler).
+```
+GitHub (main) ──push──▶ Vercel (build em São Paulo)
+                         ├─ npm install → prisma generate
+                         ├─ prisma migrate deploy ──▶ Neon (Postgres, São Paulo) via DIRECT_URL
+                         └─ next build
+                        site no ar ──consultas──▶ Neon via DATABASE_URL (pooler)
+```
 
-O passo a passo do deploy entra aqui quando fizermos juntos.
+### Como foi feito
+
+1. **Neon** (neon.tech): projeto `retira`, região **AWS South America East 1 (São Paulo)**, plano gratuito.
+2. **Vercel** (vercel.com): conta Hobby (gratuita) e o app da Vercel instalado no GitHub com acesso **só** ao repositório `retira`.
+3. **Importar** `brunotaveiradasilva/retira` na Vercel (framework Next.js detectado).
+4. **Variáveis de ambiente** (Settings → Environment Variables), coladas à mão a partir do botão **Connect** do Neon:
+
+   | Nome           | Valor                                                        | Usada por                         |
+   | -------------- | ------------------------------------------------------------ | --------------------------------- |
+   | `DATABASE_URL` | URL **com** "Connection pooling" (tem `-pooler` no endereço) | o site, a cada requisição         |
+   | `DIRECT_URL`   | URL **sem** pooling                                          | `prisma migrate deploy`, no build |
+
+   Marcadas como **Sensitive**: depois de salvas, nem você consegue ver o valor (só editar).
+
+5. **Deploy**. O `vercel.json` já faz `prisma migrate deploy && next build` e coloca as funções em `gru1` (São Paulo, perto do banco).
+
+### O que deu errado no caminho (e o que ensina)
+
+- **`Connection url is empty`** no primeiro deploy: a `DIRECT_URL` ficou salva **vazia**. No `prisma.config.ts` estava `DIRECT_URL ?? DATABASE_URL`, e o `??` só troca quando o valor é `null`/`undefined` — string vazia passa. Trocamos por `||`, que também pula `""`. **`??` pula só `null`/`undefined`; `||` pula também `""`, `0` e `false`.**
+- **Testar antes de ir pra produção**: com o PR ainda aberto, refizemos o deploy de **prévia** (preview) com as variáveis corrigidas. Ficou "Ready", e só então fizemos o merge.
+- **O merge na `main` não disparou deploy** da primeira vez; criamos manualmente em Deployments → ⋯ → Create Deployment → `main`.
+
+### Cuidados em produção
+
+- O banco de produção começa **vazio**: cada empresa se cadastra em `/cadastro`.
+- **Nunca rode `npm run db:seed` apontando pra produção**: ele **apaga tudo** antes de recriar os exemplos.
+- Mudou o schema? A migration criada localmente (`npm run db:migrate`) vai pro git e o próximo deploy aplica com `migrate deploy`. Nada de rodar `migrate dev` em produção.
+- A senha do banco mora só nas variáveis da Vercel e no Neon. Se vazar, gere outra no Neon (Roles → Reset password) e edite as duas variáveis.
 
 ## Exercícios
 

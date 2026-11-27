@@ -2,7 +2,11 @@
 
 **Saiba com quem está cada material.** Almoxarifado para empresas: cadastre materiais e colaboradores e registre retiradas e devoluções.
 
+**No ar:** https://retira-nine.vercel.app (cadastre sua empresa pra testar)
+
 Projeto de estudo de React + TypeScript + Next.js.
+
+[![CI](https://github.com/brunotaveiradasilva/retira/actions/workflows/ci.yml/badge.svg)](https://github.com/brunotaveiradasilva/retira/actions/workflows/ci.yml)
 
 ## Rodando
 
@@ -28,7 +32,7 @@ Abra http://localhost:3000 e entre com `admin@exemplo.com` / `retira123` (criado
 
 Next.js 16 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Prisma 7 + PostgreSQL · Zod 4 · React Hook Form · login próprio (sessão no banco + scrypt)
 
-Próximas fases: testes e deploy (Vercel + Neon) · API em Java.
+Deploy: Vercel (São Paulo) + Neon (Postgres, São Paulo). Próxima fase: API em Java.
 
 ## Documentação
 

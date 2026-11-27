@@ -59,7 +59,7 @@ Emprestimo 1──N ItemEmprestimo N──1 Material
 | 4 · Auth ✅        | Cadastro cria empresa, login, rotas protegidas                 | Sessão no banco, cookies, proxy, scrypt, multi-tenant             |
 | 5 · Empréstimos ✅ | Retirada com vários itens, devolução parcial, termo imprimível | `useFieldArray`, transações, union types                          |
 | 6 · Painel ✅      | Cards, atrasados, histórico                                    | Agregações, `searchParams`, `loading.tsx`, `error.tsx`            |
-| 7 · Qualidade      | Vitest, Playwright, CI, deploy Vercel                          | Testes, env vars, GitHub Actions                                  |
+| 7 · Qualidade ✅   | Vitest, Playwright, CI, deploy Vercel                          | Testes, env vars, GitHub Actions                                  |
 | 8 · Java           | API Spring Boot no mesmo Postgres                              | Spring Boot, JPA, REST                                            |
 
 Ciclo de cada feature: **schema Zod → service → action → formulário → lista/detalhe → teste do service**.
