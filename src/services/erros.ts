@@ -1,7 +1,7 @@
 import { Prisma } from "@/generated/prisma/client";
 
 /**
- * Erro "esperado": uma regra do negócio foi violada (ex.: excluir tipo que tem materiais).
+ * Erro "esperado": uma regra do negócio foi violada (ex.: excluir material que já foi emprestado).
  * A mensagem é escrita pra pessoa que usa o sistema ler.
  * Erros de outro tipo (banco fora do ar, bug) NÃO são deste tipo e viram erro genérico.
  */

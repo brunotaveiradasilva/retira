@@ -20,7 +20,7 @@ type Recurso = {
 const recursos: Recurso[] = [
   {
     titulo: "Materiais",
-    descricao: "Cadastre ferramentas, EPIs e equipamentos por tipo.",
+    descricao: "Cadastre ferramentas, EPIs e equipamentos.",
   },
   {
     titulo: "Colaboradores",

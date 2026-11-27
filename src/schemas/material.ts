@@ -13,7 +13,6 @@ export const materialSchema = z
       .max(100, "Máximo de 100 letras"),
     // Campo vazio no formulário vira null no banco.
     codigo: textoOpcional(30),
-    tipoId: z.string().min(1, "Escolha o tipo"),
     // z.enum aceita o objeto de enum que o Prisma gerou: se o schema.prisma mudar, isto acompanha.
     controle: z.enum(Controle),
     quantidade: z

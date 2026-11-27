@@ -39,7 +39,6 @@ export const config = {
   matcher: [
     "/painel/:path*",
     "/materiais/:path*",
-    "/tipos/:path*",
     "/colaboradores/:path*",
     "/emprestimos/:path*",
     "/login",
