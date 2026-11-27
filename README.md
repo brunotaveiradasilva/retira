@@ -15,6 +15,13 @@ npm run db:seed       # dados de exemplo
 npm run dev
 ```
 
+Testes:
+
+```powershell
+npm test            # unidade (Vitest)
+npm run test:e2e    # ponta a ponta (Playwright) — recria os dados de exemplo
+```
+
 Abra http://localhost:3000 e entre com `admin@exemplo.com` / `retira123` (criado pelo seed), ou cadastre uma empresa nova.
 
 ## Stack
@@ -33,3 +40,4 @@ Próximas fases: testes e deploy (Vercel + Neon) · API em Java.
 - [Fase 4 — login e empresas](docs/fase-4.md)
 - [Fase 5 — empréstimos, devolução e termo](docs/fase-5.md)
 - [Fase 6 — painel, busca, filtros e paginação](docs/fase-6.md)
+- [Fase 7 — testes, CI e deploy](docs/fase-7.md)

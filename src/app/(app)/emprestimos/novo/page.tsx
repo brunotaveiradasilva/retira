@@ -4,17 +4,10 @@ import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { RetiradaFormulario } from "@/components/emprestimos/retirada-form";
 import { opcoesDeRetirada } from "@/lib/consultas";
+import { paraInputDate, somarDias } from "@/lib/datas";
 import { agora } from "@/lib/empresa-atual";
 
 export const metadata: Metadata = { title: "Nova retirada" };
-
-/** Date → "2026-12-03" (o formato do <input type="date">), no fuso do servidor. */
-function paraInputDate(data: Date): string {
-  const ano = data.getFullYear();
-  const mes = String(data.getMonth() + 1).padStart(2, "0");
-  const dia = String(data.getDate()).padStart(2, "0");
-  return `${ano}-${mes}-${dia}`;
-}
 
 export default async function NovaRetiradaPage({
   searchParams,
@@ -29,8 +22,7 @@ export default async function NovaRetiradaPage({
   // Prazo sugerido: 7 dias. Calculado AQUI (no servidor) e passado pronto:
   // se o navegador calculasse, o HTML do servidor e o do navegador poderiam
   // ter datas diferentes (erro de "hydration").
-  const prazo = new Date(hoje);
-  prazo.setDate(prazo.getDate() + 7);
+  const prazo = somarDias(hoje, 7);
 
   // Só aceita o colaborador da URL se ele estiver na lista (ativo e desta empresa).
   const colaboradorInicial =

@@ -1,5 +1,6 @@
 import "server-only";
 import { Prisma } from "@/generated/prisma/client";
+import { fimDoDia } from "@/lib/datas";
 import { prisma } from "@/lib/prisma";
 import type { DevolucaoInput, RetiradaInput } from "@/schemas/emprestimo";
 import { RegraDeNegocioError } from "./erros";
@@ -182,9 +183,4 @@ async function unidadesFora(
     _sum: { quantidade: true },
   });
   return new Map(grupos.map((g) => [g.materialId, g._sum.quantidade ?? 0]));
-}
-
-/** "2026-12-03" → 03/12/2026 às 23:59:59 (o prazo vale até o fim do dia). */
-function fimDoDia(data: string): Date {
-  return new Date(`${data}T23:59:59`);
 }

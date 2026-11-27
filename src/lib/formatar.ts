@@ -1,9 +1,11 @@
 import type { EstadoMaterial, StatusEmprestimo } from "@/types";
+import { FUSO } from "./datas";
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
+  timeZone: FUSO, // sempre o dia de Brasília, rode o servidor onde rodar
 });
 
 // Campo opcional no banco chega como null (não undefined). Aceitamos os dois.

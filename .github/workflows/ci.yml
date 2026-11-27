@@ -1,0 +1,74 @@
+# CI = Integração Contínua. A cada push e a cada PR, o GitHub sobe uma máquina Linux
+# limpa, instala o projeto do zero e roda as verificações. Se algo quebrar, o PR mostra
+# um X vermelho — antes de chegar na main.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Se você der dois pushes seguidos na mesma branch, cancela a execução anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Lint, tipos, formatação, testes e build
+    runs-on: ubuntu-latest
+    env:
+      # O `prisma generate` (no npm ci) e o build precisam de uma URL, mas não conectam.
+      DATABASE_URL: postgresql://ninguem:nada@localhost:5432/nada
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  e2e:
+    name: Ponta a ponta (Playwright + Postgres)
+    runs-on: ubuntu-latest
+    # Um Postgres de verdade, só pra este job, que some no final.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: retira
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/retira
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # migrate deploy: aplica as migrations que já existem (não cria novas). É o comando de produção.
+      - run: npx prisma migrate deploy
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      # O playwright.config.ts roda o seed (globalSetup) e sobe o `npm run start`.
+      - run: npm run test:e2e
+        env:
+          CI: true
+      # Se falhar, guarda o relatório (com o "filme" do teste) pra baixar na página do CI.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: relatorio-playwright
+          path: playwright-report/
+          retention-days: 7

@@ -13,5 +13,7 @@ SaaS de almoxarifado: a empresa cadastra materiais e colaboradores e registra re
 - Filtros e paginação moram na URL (`searchParams`); ler sempre com `src/lib/filtros.ts`. Se der `ECONNREFUSED`, o banco local caiu: `npm run db:start`.
 - Banco: `npm run db:start` (Postgres local), `db:migrate`, `db:seed`, `db:studio`. Mudou o schema → `npm run db:migrate` e **reiniciar o `npm run dev`** (o Prisma Client fica em `globalThis`).
 - Next 16 com Cache Components: páginas que leem o banco precisam de `loading.tsx` na própria pasta; componentes do layout que leem a sessão ficam dentro de `<Suspense>`. Rota nova → `npx next typegen` antes do `tsc`.
-- Antes de commitar: `npm run lint`, `npm run typecheck`, `npm run format:check`.
+- Testes: `npm test` (Vitest, `src/**/*.test.ts`) e `npm run test:e2e` (Playwright, `e2e/`; roda o seed antes). CI em `.github/workflows/ci.yml`.
+- Datas: sempre pelo fuso de Brasília via `src/lib/datas.ts` (o servidor de produção roda em UTC).
+- Antes de commitar: `npm run lint`, `npm run typecheck`, `npm run format:check`, `npm test`.
 - Commits e PRs só em nome do autor: **não** adicionar `Co-Authored-By` nem rodapé de "Generated with Claude Code".
