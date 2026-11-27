@@ -2,10 +2,22 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { MaterialInput } from "@/schemas/material";
 import { RegraDeNegocioError, violouUnico } from "./erros";
+import { criarComProximoCodigo } from "./numeracao";
 
 export async function criarMaterial(empresaId: string, dados: MaterialInput) {
   try {
-    return await prisma.material.create({ data: { ...dados, empresaId } });
+    return await criarComProximoCodigo({
+      maiorAtual: async () =>
+        (
+          await prisma.material.aggregate({
+            where: { empresaId },
+            _max: { numero: true },
+          })
+        )._max.numero,
+      criar: (numero) =>
+        prisma.material.create({ data: { ...dados, empresaId, numero } }),
+      oQue: "materiais",
+    });
   } catch (erro) {
     throw traduzirErro(erro);
   }
@@ -72,7 +84,7 @@ async function garantirMaterialDaEmpresa(empresaId: string, id: string) {
 function traduzirErro(erro: unknown) {
   if (violouUnico(erro)) {
     return new RegraDeNegocioError(
-      "Já existe um material com esse código.",
+      "Já existe um material com esse patrimônio.",
       "codigo",
     );
   }

@@ -16,6 +16,7 @@ import { listarColaboradores } from "@/lib/consultas";
 import { lerTexto } from "@/lib/filtros";
 import { agora } from "@/lib/empresa-atual";
 import { estaAtrasado, unidadesPendentes } from "@/lib/regras";
+import { formatarCodigo } from "@/lib/formatar";
 
 export const metadata: Metadata = { title: "Colaboradores" };
 
@@ -46,7 +47,7 @@ export default async function ColaboradoresPage({
 
       <Suspense>
         <BarraDeFiltros>
-          <CampoBusca placeholder="Buscar por nome, matrícula ou setor" />
+          <CampoBusca placeholder="Buscar por nome, código, matrícula ou setor" />
           <FiltroCheckbox parametro="inativos" rotulo="Mostrar inativos" />
         </BarraDeFiltros>
       </Suspense>
@@ -85,6 +86,7 @@ export default async function ColaboradoresPage({
                     </div>
                     <div className="text-muted-foreground text-sm">
                       {[
+                        `Cód. ${formatarCodigo(colaborador.numero)}`,
                         colaborador.setor,
                         colaborador.matricula &&
                           `Mat. ${colaborador.matricula}`,

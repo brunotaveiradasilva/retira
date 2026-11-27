@@ -37,15 +37,15 @@ test("retirada com dois itens, devolução parcial e devolução do resto", asyn
 
   await page
     .getByLabel("Quem está retirando")
-    .selectOption({ label: "Marcos Pereira · Obras" });
+    .selectOption({ label: "0004 · Marcos Pereira · Obras" });
   await page
     .getByLabel("Material 1")
-    .selectOption({ label: "Rádio comunicador · 6 disp." });
+    .selectOption({ label: "0010 · Rádio comunicador · 6 disp." });
   await page.getByLabel("Quantidade 1").fill("2");
   await page.getByRole("button", { name: "Adicionar item" }).click();
   await page
     .getByLabel("Material 2")
-    .selectOption({ label: "Trena 5 m · 6 disp." });
+    .selectOption({ label: "0004 · Trena 5 m · 6 disp." });
 
   // Pedir mais do que há: o navegador barra antes de ir ao servidor.
   await page.getByLabel("Quantidade 2").fill("9");

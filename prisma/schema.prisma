@@ -93,8 +93,9 @@ model Sessao {
 
 model Material {
   id         String         @id @default(cuid())
+  numero     Int // código de 4 dígitos (0001…9999), automático e sequencial por empresa
   nome       String
-  codigo     String? // patrimônio / código interno
+  codigo     String? // patrimônio (digitado, opcional)
   controle   Controle       @default(UNITARIO)
   quantidade Int            @default(1)
   estado     EstadoMaterial @default(BOM)
@@ -105,13 +106,15 @@ model Material {
 
   itens ItemEmprestimo[]
 
-  @@unique([empresaId, codigo]) // código único por empresa (vários sem código é ok)
+  @@unique([empresaId, numero])
+  @@unique([empresaId, codigo]) // patrimônio único por empresa (vários sem patrimônio é ok)
   @@index([empresaId])
   @@map("materiais")
 }
 
 model Colaborador {
   id        String   @id @default(cuid())
+  numero    Int // código de 4 dígitos (0001…9999), automático e sequencial por empresa
   nome      String
   matricula String?
   setor     String?
@@ -124,6 +127,7 @@ model Colaborador {
 
   emprestimos Emprestimo[]
 
+  @@unique([empresaId, numero])
   @@index([empresaId])
   @@map("colaboradores")
 }

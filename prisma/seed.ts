@@ -57,20 +57,31 @@ async function main() {
   });
   await prisma.material.create({
     data: {
+      numero: 1,
       nome: "Jogo de chaves combinadas",
       empresaId: oficina.id,
     },
   });
   await prisma.colaborador.create({
-    data: { nome: "Bia Mecânica", setor: "Oficina", empresaId: oficina.id },
+    data: {
+      numero: 1,
+      nome: "Bia Mecânica",
+      setor: "Oficina",
+      empresaId: oficina.id,
+    },
   });
 
-  // Helper local pra não repetir empresaId em todo material.
+  // Helper local pra não repetir empresaId nem o código em todo material.
   // Prisma.MaterialUncheckedCreateInput é o tipo gerado do "data" de criar material com ids;
-  // Omit<..., "empresaId"> = o mesmo tipo sem o campo empresaId (o helper preenche).
+  // Omit<..., "empresaId" | "numero"> = o mesmo tipo sem esses campos (o helper preenche).
+  // O código de 4 dígitos segue a ordem de criação: 0001, 0002...
+  let ultimoCodigo = 0;
   const material = (
-    dados: Omit<Prisma.MaterialUncheckedCreateInput, "empresaId">,
-  ) => prisma.material.create({ data: { ...dados, empresaId } });
+    dados: Omit<Prisma.MaterialUncheckedCreateInput, "empresaId" | "numero">,
+  ) =>
+    prisma.material.create({
+      data: { ...dados, empresaId, numero: ++ultimoCodigo },
+    });
 
   const furadeira = await material({
     nome: "Furadeira Bosch GSB 13",
@@ -121,6 +132,7 @@ async function main() {
 
   const ana = await prisma.colaborador.create({
     data: {
+      numero: 1,
       nome: "Ana Souza",
       matricula: "1023",
       setor: "Manutenção",
@@ -130,6 +142,7 @@ async function main() {
   });
   const carlos = await prisma.colaborador.create({
     data: {
+      numero: 2,
       nome: "Carlos Lima",
       matricula: "1041",
       setor: "Obras",
@@ -138,10 +151,17 @@ async function main() {
     },
   });
   const juliana = await prisma.colaborador.create({
-    data: { nome: "Juliana Reis", matricula: "1055", setor: "TI", empresaId },
+    data: {
+      numero: 3,
+      nome: "Juliana Reis",
+      matricula: "1055",
+      setor: "TI",
+      empresaId,
+    },
   });
   const marcos = await prisma.colaborador.create({
     data: {
+      numero: 4,
       nome: "Marcos Pereira",
       matricula: "1060",
       setor: "Obras",
@@ -150,6 +170,7 @@ async function main() {
   });
   await prisma.colaborador.create({
     data: {
+      numero: 5,
       nome: "Paula Martins",
       matricula: "0987",
       setor: "Comercial",

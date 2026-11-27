@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { BotaoImprimir } from "@/components/emprestimos/botao-imprimir";
 import { buscarEmprestimo } from "@/lib/consultas";
-import { formatarData } from "@/lib/formatar";
+import { formatarCodigo, formatarData } from "@/lib/formatar";
 
 export const metadata = { title: "Termo de responsabilidade" };
 
@@ -43,7 +43,8 @@ export default async function TermoPage({
         </header>
 
         <p className="mb-4">
-          Eu, <strong>{colaborador.nome}</strong>
+          Eu, <strong>{colaborador.nome}</strong> (código{" "}
+          {formatarCodigo(colaborador.numero)})
           {colaborador.matricula && <>, matrícula {colaborador.matricula}</>}
           {colaborador.setor && <>, do setor {colaborador.setor}</>}, declaro
           ter recebido em <strong>{formatarData(emprestimo.retiradoEm)}</strong>{" "}
@@ -65,7 +66,8 @@ export default async function TermoPage({
             <tr className="border-b text-left">
               <th className="py-1 pr-2 font-medium">Qtd.</th>
               <th className="py-1 pr-2 font-medium">Material</th>
-              <th className="py-1 font-medium">Código</th>
+              <th className="py-1 pr-2 font-medium">Código</th>
+              <th className="py-1 font-medium">Patrimônio</th>
             </tr>
           </thead>
           <tbody>
@@ -73,6 +75,9 @@ export default async function TermoPage({
               <tr key={item.id} className="border-b">
                 <td className="py-1 pr-2 tabular-nums">{item.quantidade}</td>
                 <td className="py-1 pr-2">{item.material.nome}</td>
+                <td className="py-1 pr-2 font-mono tabular-nums">
+                  {formatarCodigo(item.material.numero)}
+                </td>
                 <td className="py-1">{item.material.codigo ?? "—"}</td>
               </tr>
             ))}

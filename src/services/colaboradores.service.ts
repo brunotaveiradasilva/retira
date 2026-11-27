@@ -2,12 +2,24 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { ColaboradorInput } from "@/schemas/colaborador";
 import { RegraDeNegocioError } from "./erros";
+import { criarComProximoCodigo } from "./numeracao";
 
 export async function criarColaborador(
   empresaId: string,
   dados: ColaboradorInput,
 ) {
-  return prisma.colaborador.create({ data: { ...dados, empresaId } });
+  return criarComProximoCodigo({
+    maiorAtual: async () =>
+      (
+        await prisma.colaborador.aggregate({
+          where: { empresaId },
+          _max: { numero: true },
+        })
+      )._max.numero,
+    criar: (numero) =>
+      prisma.colaborador.create({ data: { ...dados, empresaId, numero } }),
+    oQue: "colaboradores",
+  });
 }
 
 export async function atualizarColaborador(

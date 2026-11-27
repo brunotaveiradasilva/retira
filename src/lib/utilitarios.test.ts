@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fimDoDia, inicioDoDia, meioDoDia, paraInputDate } from "./datas";
 import { lerOpcao, lerPagina, lerTexto, urlCom } from "./filtros";
-import { formatarData, iniciais } from "./formatar";
+import { formatarCodigo, formatarData, iniciais } from "./formatar";
 import { conferirSenha, gerarHashDeSenha } from "./senha";
 
 describe("filtros da URL", () => {
@@ -101,5 +101,13 @@ describe("datas sem hora (evento e retirada)", () => {
     expect(inicioDoDia("2026-12-03").toISOString()).toBe(
       "2026-12-03T03:00:00.000Z",
     );
+  });
+});
+
+describe("código de 4 dígitos", () => {
+  it("completa com zeros à esquerda", () => {
+    expect(formatarCodigo(1)).toBe("0001");
+    expect(formatarCodigo(42)).toBe("0042");
+    expect(formatarCodigo(9999)).toBe("9999");
   });
 });
