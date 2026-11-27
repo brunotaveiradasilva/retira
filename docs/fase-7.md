@@ -92,19 +92,29 @@ GitHub (main) ──push──▶ Vercel (build em São Paulo)
 
    Marcadas como **Sensitive**: depois de salvas, nem você consegue ver o valor (só editar).
 
-5. **Deploy**. O `vercel.json` já faz `prisma migrate deploy && next build` e coloca as funções em `gru1` (São Paulo, perto do banco).
+5. **Deploy**. O `vercel.json` roda `scripts/build-vercel.mjs` (migrations **só em produção**, veja abaixo) e coloca as funções em `gru1` (São Paulo, perto do banco).
 
 ### O que deu errado no caminho (e o que ensina)
 
 - **`Connection url is empty`** no primeiro deploy: a `DIRECT_URL` ficou salva **vazia**. No `prisma.config.ts` estava `DIRECT_URL ?? DATABASE_URL`, e o `??` só troca quando o valor é `null`/`undefined` — string vazia passa. Trocamos por `||`, que também pula `""`. **`??` pula só `null`/`undefined`; `||` pula também `""`, `0` e `false`.**
 - **Testar antes de ir pra produção**: com o PR ainda aberto, refizemos o deploy de **prévia** (preview) com as variáveis corrigidas. Ficou "Ready", e só então fizemos o merge.
 - **O merge na `main` não disparou deploy** da primeira vez; criamos manualmente em Deployments → ⋯ → Create Deployment → `main`.
+- **A prévia de um PR alterou o banco de produção.** As prévias usam as mesmas variáveis (e o mesmo banco) da produção, e o build rodava `prisma migrate deploy` sempre. No PR que removeu os tipos, a migration apagou a tabela **antes do merge**, e o site no ar (código antigo) ficou alguns minutos procurando uma coluna que não existia mais. Correção: `scripts/build-vercel.mjs` olha a variável `VERCEL_ENV` que a Vercel fornece (`production` / `preview`) e só migra em produção.
+
+  ```js
+  if (process.env.VERCEL_ENV === "production")
+    rodar("npx prisma migrate deploy");
+  rodar("npx next build");
+  ```
+
+  Efeito colateral aceito: a prévia de um PR que **muda o schema** roda com o banco antigo e pode dar erro nas telas afetadas. Próximo passo possível: dar às prévias um banco **separado** (o Neon permite criar uma _branch_ do banco só pra elas).
 
 ### Cuidados em produção
 
 - O banco de produção começa **vazio**: cada empresa se cadastra em `/cadastro`.
 - **Nunca rode `npm run db:seed` apontando pra produção**: ele **apaga tudo** antes de recriar os exemplos.
-- Mudou o schema? A migration criada localmente (`npm run db:migrate`) vai pro git e o próximo deploy aplica com `migrate deploy`. Nada de rodar `migrate dev` em produção.
+- Mudou o schema? A migration criada localmente (`npm run db:migrate`) vai pro git e o **deploy de produção** (depois do merge) aplica com `migrate deploy`. Nada de rodar `migrate dev` em produção.
+- **As prévias ainda leem e gravam no banco de produção** (só não migram). Não use a prévia de um PR pra testar cadastros falsos.
 - A senha do banco mora só nas variáveis da Vercel e no Neon. Se vazar, gere outra no Neon (Roles → Reset password) e edite as duas variáveis.
 
 ## Exercícios
