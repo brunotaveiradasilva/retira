@@ -21,7 +21,7 @@ Abra http://localhost:3000 e entre com `admin@exemplo.com` / `retira123` (criado
 
 Next.js 16 (App Router) · TypeScript · Tailwind CSS · shadcn/ui · Prisma 7 + PostgreSQL · Zod 4 · React Hook Form · login próprio (sessão no banco + scrypt)
 
-Próximas fases: painel e histórico · testes e deploy (Vercel + Neon).
+Próximas fases: testes e deploy (Vercel + Neon) · API em Java.
 
 ## Documentação
 
@@ -32,3 +32,4 @@ Próximas fases: painel e histórico · testes e deploy (Vercel + Neon).
 - [Fase 3 — cadastros com Server Actions, Zod e React Hook Form](docs/fase-3.md)
 - [Fase 4 — login e empresas](docs/fase-4.md)
 - [Fase 5 — empréstimos, devolução e termo](docs/fase-5.md)
+- [Fase 6 — painel, busca, filtros e paginação](docs/fase-6.md)

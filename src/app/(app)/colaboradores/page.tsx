@@ -6,16 +6,30 @@ import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Suspense } from "react";
+import {
+  BarraDeFiltros,
+  CampoBusca,
+  FiltroCheckbox,
+} from "@/components/app/filtros-url";
 import { listarColaboradores } from "@/lib/consultas";
+import { lerTexto } from "@/lib/filtros";
 import { agora } from "@/lib/empresa-atual";
 import { estaAtrasado, unidadesPendentes } from "@/lib/regras";
 
 export const metadata: Metadata = { title: "Colaboradores" };
 
-export default async function ColaboradoresPage() {
+export default async function ColaboradoresPage({
+  searchParams,
+}: PageProps<"/colaboradores">) {
+  const parametros = await searchParams;
+  const filtro = {
+    busca: lerTexto(parametros.busca),
+    incluirInativos: lerTexto(parametros.inativos) === "1",
+  };
   const [hoje, colaboradores] = await Promise.all([
     agora(),
-    listarColaboradores(),
+    listarColaboradores(filtro),
   ]);
 
   return (
@@ -29,6 +43,21 @@ export default async function ColaboradoresPage() {
           </Link>
         }
       />
+
+      <Suspense>
+        <BarraDeFiltros>
+          <CampoBusca placeholder="Buscar por nome, matrícula ou setor" />
+          <FiltroCheckbox parametro="inativos" rotulo="Mostrar inativos" />
+        </BarraDeFiltros>
+      </Suspense>
+
+      {colaboradores.length === 0 && (
+        <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
+          {filtro.busca
+            ? "Ninguém encontrado com essa busca."
+            : "Nenhum colaborador ativo. Cadastre o primeiro."}
+        </p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {colaboradores.map((colaborador) => {

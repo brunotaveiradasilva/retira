@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { buscarEmprestimo } from "@/lib/consultas";
 import { agora } from "@/lib/empresa-atual";
 import { formatarData } from "@/lib/formatar";
-import { estaAtrasado } from "@/lib/regras";
+import { diasDeAtraso, estaAtrasado } from "@/lib/regras";
 
 export async function generateMetadata({
   params,
@@ -48,7 +48,10 @@ export default async function EmprestimoPage({
         descricao={`Retirado em ${formatarData(emprestimo.retiradoEm)}`}
         acoes={
           <div className="flex items-center gap-2">
-            <StatusBadge status={emprestimo.status} atrasado={atrasado} />
+            <StatusBadge
+              status={emprestimo.status}
+              diasAtrasado={diasDeAtraso(emprestimo, hoje)}
+            />
             <Link
               href={`/emprestimos/${emprestimo.id}/termo`}
               className={buttonVariants({ variant: "outline", size: "sm" })}

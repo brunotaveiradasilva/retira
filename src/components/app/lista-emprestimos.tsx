@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import type { EmprestimoDetalhado } from "@/lib/consultas";
 import { formatarData } from "@/lib/formatar";
-import { estaAtrasado } from "@/lib/regras";
+import { diasDeAtraso } from "@/lib/regras";
 
 type ListaEmprestimosProps = {
   /** Empréstimos já com colaborador e itens incluídos (veja `comDetalhes` em consultas.ts). */
@@ -54,7 +54,8 @@ export function ListaEmprestimos({
         </TableHeader>
         <TableBody>
           {emprestimos.map((emprestimo) => {
-            const atrasado = estaAtrasado(emprestimo, hoje);
+            const dias = diasDeAtraso(emprestimo, hoje);
+            const atrasado = dias > 0;
             return (
               <TableRow key={emprestimo.id}>
                 {!semColaborador && (
@@ -106,7 +107,7 @@ export function ListaEmprestimos({
                   >
                     <StatusBadge
                       status={emprestimo.status}
-                      atrasado={atrasado}
+                      diasAtrasado={dias}
                     />
                   </Link>
                 </TableCell>

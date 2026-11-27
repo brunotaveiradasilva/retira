@@ -18,6 +18,34 @@ export function estaAtrasado(
   return emprestimo.previsaoDevolucao < hoje;
 }
 
+const UM_DIA_MS = 24 * 60 * 60 * 1000;
+
+/** Há quantos dias está atrasado (0 se não está). Conta dias inteiros, arredondando pra cima. */
+export function diasDeAtraso(
+  emprestimo: Pick<Emprestimo, "status" | "previsaoDevolucao">,
+  hoje: Date,
+): number {
+  if (!estaAtrasado(emprestimo, hoje) || !emprestimo.previsaoDevolucao)
+    return 0;
+  return Math.ceil(
+    (hoje.getTime() - emprestimo.previsaoDevolucao.getTime()) / UM_DIA_MS,
+  );
+}
+
+/** Vence (ainda não venceu) dentro dos próximos `dias` dias? */
+export function venceEmBreve(
+  emprestimo: Pick<Emprestimo, "status" | "previsaoDevolucao">,
+  hoje: Date,
+  dias = 3,
+): boolean {
+  if (!estaAberto(emprestimo) || !emprestimo.previsaoDevolucao) return false;
+  const limite = new Date(hoje.getTime() + dias * UM_DIA_MS);
+  return (
+    emprestimo.previsaoDevolucao >= hoje &&
+    emprestimo.previsaoDevolucao <= limite
+  );
+}
+
 /** Soma as unidades que ainda não voltaram (opcionalmente só de um material). */
 export function unidadesPendentes(
   emprestimos: {
