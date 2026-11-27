@@ -135,6 +135,12 @@ model Emprestimo {
   status            StatusEmprestimo @default(ABERTO)
   observacao        String?
 
+  // Evento para o qual o material foi retirado (opcional): uma obra, uma feira, um show...
+  // Aparece no calendário, no detalhe e no termo.
+  dataEvento     DateTime? @map("data_evento")
+  localEvento    String?   @map("local_evento")
+  enderecoEvento String?   @map("endereco_evento")
+
   colaboradorId String      @map("colaborador_id")
   colaborador   Colaborador @relation(fields: [colaboradorId], references: [id])
   empresaId     String      @map("empresa_id")

@@ -1,6 +1,6 @@
 import "server-only";
 import { Prisma } from "@/generated/prisma/client";
-import { fimDoDia } from "@/lib/datas";
+import { fimDoDia, inicioDoDia, meioDoDia, paraInputDate } from "@/lib/datas";
 import { prisma } from "@/lib/prisma";
 import type { DevolucaoInput, RetiradaInput } from "@/schemas/emprestimo";
 import { RegraDeNegocioError } from "./erros";
@@ -20,6 +20,12 @@ export async function registrarRetirada(
   dados: RetiradaInput,
   agora: Date,
 ) {
+  // Retirada hoje → guarda a hora exata. Outro dia (registrando depois, ou agendando) →
+  // início daquele dia. Obs.: uma retirada agendada já conta como "fora" desde o registro.
+  const retiradoEm =
+    dados.retiradoEm === paraInputDate(agora)
+      ? agora
+      : inicioDoDia(dados.retiradoEm);
   const previsaoDevolucao = dados.previsaoDevolucao
     ? fimDoDia(dados.previsaoDevolucao)
     : null;
@@ -96,9 +102,12 @@ export async function registrarRetirada(
       data: {
         empresaId,
         colaboradorId: colaborador.id,
-        retiradoEm: agora,
+        retiradoEm,
         previsaoDevolucao,
         observacao: dados.observacao,
+        dataEvento: dados.dataEvento ? meioDoDia(dados.dataEvento) : null,
+        localEvento: dados.localEvento,
+        enderecoEvento: dados.enderecoEvento,
         itens: {
           create: dados.itens.map((item) => ({
             materialId: item.materialId,

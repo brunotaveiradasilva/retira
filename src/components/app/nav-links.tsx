@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArrowLeftRight,
+  CalendarDays,
   LayoutDashboard,
   Package,
   Users,
@@ -25,6 +26,7 @@ const itens: ItemDeMenu[] = [
   { href: "/materiais", rotulo: "Materiais", icone: Package },
   { href: "/colaboradores", rotulo: "Colaboradores", icone: Users },
   { href: "/emprestimos", rotulo: "Empréstimos", icone: ArrowLeftRight },
+  { href: "/calendario", rotulo: "Calendário", icone: CalendarDays },
 ];
 
 type NavLinksProps = {

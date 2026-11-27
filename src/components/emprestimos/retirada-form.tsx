@@ -29,7 +29,8 @@ import {
 } from "@/schemas/emprestimo";
 
 type RetiradaFormProps = OpcoesDeRetirada & {
-  /** Data sugerida para devolução ("2026-12-03"), calculada no servidor. */
+  /** Hoje ("2026-11-27") e a devolução sugerida, calculados no servidor (fuso de Brasília). */
+  hoje: string;
   prazoSugerido: string;
   /** Colaborador já escolhido (quando vem da página dele). */
   colaboradorInicial?: string;
@@ -38,6 +39,7 @@ type RetiradaFormProps = OpcoesDeRetirada & {
 export function RetiradaFormulario({
   colaboradores,
   materiais,
+  hoje,
   prazoSugerido,
   colaboradorInicial,
 }: RetiradaFormProps) {
@@ -69,7 +71,11 @@ export function RetiradaFormulario({
     resolver: zodResolver(schemaDaTela),
     defaultValues: {
       colaboradorId: colaboradorInicial ?? "",
+      retiradoEm: hoje,
       previsaoDevolucao: prazoSugerido,
+      dataEvento: "",
+      localEvento: "",
+      enderecoEvento: "",
       observacao: "",
       itens: [{ materialId: "", quantidade: 1 }],
     },
@@ -120,28 +126,51 @@ export function RetiradaFormulario({
   return (
     <form onSubmit={handleSubmit(enviar)} noValidate className="max-w-2xl">
       <FieldGroup>
-        <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
-          <Field data-invalid={!!errors.colaboradorId}>
-            <FieldLabel htmlFor="colaboradorId">Quem está retirando</FieldLabel>
-            <NativeSelect
-              id="colaboradorId"
-              {...register("colaboradorId")}
-              aria-invalid={!!errors.colaboradorId}
-              className="w-full"
-            >
-              <NativeSelectOption value="">Escolha...</NativeSelectOption>
-              {colaboradores.map((colaborador) => (
-                <NativeSelectOption key={colaborador.id} value={colaborador.id}>
-                  {colaborador.nome}
-                  {colaborador.setor ? ` · ${colaborador.setor}` : ""}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-            <FieldError errors={[errors.colaboradorId]} />
+        <Field data-invalid={!!errors.colaboradorId}>
+          <FieldLabel htmlFor="colaboradorId">Quem está retirando</FieldLabel>
+          <NativeSelect
+            id="colaboradorId"
+            {...register("colaboradorId")}
+            aria-invalid={!!errors.colaboradorId}
+            className="w-full"
+          >
+            <NativeSelectOption value="">Escolha...</NativeSelectOption>
+            {colaboradores.map((colaborador) => (
+              <NativeSelectOption key={colaborador.id} value={colaborador.id}>
+                {colaborador.nome}
+                {colaborador.setor ? ` · ${colaborador.setor}` : ""}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          <FieldError errors={[errors.colaboradorId]} />
+        </Field>
+
+        {/* As três datas lado a lado, na ordem em que acontecem. */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field data-invalid={!!errors.retiradoEm}>
+            <FieldLabel htmlFor="retiradoEm">Retirada</FieldLabel>
+            <Input
+              id="retiradoEm"
+              type="date"
+              {...register("retiradoEm")}
+              aria-invalid={!!errors.retiradoEm}
+            />
+            <FieldError errors={[errors.retiradoEm]} />
+          </Field>
+
+          <Field data-invalid={!!errors.dataEvento}>
+            <FieldLabel htmlFor="dataEvento">Evento (opcional)</FieldLabel>
+            <Input
+              id="dataEvento"
+              type="date"
+              {...register("dataEvento")}
+              aria-invalid={!!errors.dataEvento}
+            />
+            <FieldError errors={[errors.dataEvento]} />
           </Field>
 
           <Field data-invalid={!!errors.previsaoDevolucao}>
-            <FieldLabel htmlFor="previsaoDevolucao">Devolver até</FieldLabel>
+            <FieldLabel htmlFor="previsaoDevolucao">Devolução</FieldLabel>
             <Input
               id="previsaoDevolucao"
               type="date"
@@ -149,6 +178,30 @@ export function RetiradaFormulario({
               aria-invalid={!!errors.previsaoDevolucao}
             />
             <FieldError errors={[errors.previsaoDevolucao]} />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-[2fr_3fr]">
+          <Field data-invalid={!!errors.localEvento}>
+            <FieldLabel htmlFor="localEvento">Local do evento</FieldLabel>
+            <Input
+              id="localEvento"
+              {...register("localEvento")}
+              aria-invalid={!!errors.localEvento}
+              placeholder="Ex.: Pavilhão da Expointer"
+            />
+            <FieldError errors={[errors.localEvento]} />
+          </Field>
+
+          <Field data-invalid={!!errors.enderecoEvento}>
+            <FieldLabel htmlFor="enderecoEvento">Endereço</FieldLabel>
+            <Input
+              id="enderecoEvento"
+              {...register("enderecoEvento")}
+              aria-invalid={!!errors.enderecoEvento}
+              placeholder="Rua, número, bairro, cidade"
+            />
+            <FieldError errors={[errors.enderecoEvento]} />
           </Field>
         </div>
 

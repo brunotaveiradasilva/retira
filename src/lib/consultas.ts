@@ -262,6 +262,43 @@ export async function opcoesDeRetirada() {
 
 export type OpcoesDeRetirada = Awaited<ReturnType<typeof opcoesDeRetirada>>;
 
+// ---------- calendário ----------
+
+/**
+ * Empréstimos que tocam o intervalo [inicio, fim]: retirados até o fim do intervalo
+ * E que ainda estavam com alguém em algum momento dele (abertos, ou com prazo/devolução
+ * depois do início).
+ */
+export async function emprestimosNoIntervalo(inicio: Date, fim: Date) {
+  const empresaId = await empresaAtualId();
+  return prisma.emprestimo.findMany({
+    where: {
+      empresaId,
+      retiradoEm: { lte: fim },
+      OR: [
+        { status: { not: "DEVOLVIDO" } },
+        { previsaoDevolucao: { gte: inicio } },
+        { itens: { some: { devolvidoEm: { gte: inicio } } } },
+      ],
+    },
+    include: {
+      colaborador: { select: { id: true, nome: true } },
+      itens: {
+        select: {
+          quantidade: true,
+          devolvidoEm: true,
+          material: { select: { nome: true } },
+        },
+      },
+    },
+    orderBy: { retiradoEm: "asc" },
+  });
+}
+
+export type EmprestimoDoCalendario = Awaited<
+  ReturnType<typeof emprestimosNoIntervalo>
+>[number];
+
 // ---------- painel ----------
 
 /**

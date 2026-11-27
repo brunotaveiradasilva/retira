@@ -79,6 +79,21 @@ export default async function TermoPage({
           </tbody>
         </table>
 
+        {(emprestimo.dataEvento ||
+          emprestimo.localEvento ||
+          emprestimo.enderecoEvento) && (
+          <p className="mb-4">
+            <strong>Evento:</strong>{" "}
+            {[
+              emprestimo.dataEvento && formatarData(emprestimo.dataEvento),
+              emprestimo.localEvento,
+              emprestimo.enderecoEvento,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        )}
+
         {emprestimo.observacao && (
           <p className="mb-4">
             <strong>Observação:</strong> {emprestimo.observacao}
