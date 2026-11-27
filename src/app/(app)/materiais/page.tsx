@@ -26,6 +26,7 @@ import { lerOpcao, lerTexto } from "@/lib/filtros";
 import { nomeDoEstado } from "@/lib/formatar";
 import { quantidadeDisponivel } from "@/lib/regras";
 import type { EstadoMaterial } from "@/types";
+import { Codigo } from "@/components/app/codigo";
 
 export const metadata: Metadata = { title: "Materiais" };
 
@@ -68,7 +69,7 @@ export default async function MateriaisPage({
           precisam de um Suspense em volta. */}
       <Suspense>
         <BarraDeFiltros>
-          <CampoBusca placeholder="Buscar por nome ou código" />
+          <CampoBusca placeholder="Buscar por nome, código ou patrimônio" />
           <FiltroSelect
             parametro="estado"
             rotulo="Filtrar por estado"
@@ -108,6 +109,7 @@ export default async function MateriaisPage({
                 return (
                   <TableRow key={material.id}>
                     <TableCell>
+                      <Codigo numero={material.numero} className="mr-2" />
                       <Link
                         href={`/materiais/${material.id}`}
                         className="font-medium hover:underline"
@@ -116,7 +118,7 @@ export default async function MateriaisPage({
                       </Link>
                       {material.codigo && (
                         <div className="text-muted-foreground text-xs">
-                          {material.codigo}
+                          Patrimônio {material.codigo}
                         </div>
                       )}
                     </TableCell>

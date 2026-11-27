@@ -27,6 +27,7 @@ import {
   type RetiradaForm,
   type RetiradaInput,
 } from "@/schemas/emprestimo";
+import { formatarCodigo } from "@/lib/formatar";
 
 type RetiradaFormProps = OpcoesDeRetirada & {
   /** Hoje ("2026-11-27") e a devolução sugerida, calculados no servidor (fuso de Brasília). */
@@ -137,7 +138,7 @@ export function RetiradaFormulario({
             <NativeSelectOption value="">Escolha...</NativeSelectOption>
             {colaboradores.map((colaborador) => (
               <NativeSelectOption key={colaborador.id} value={colaborador.id}>
-                {colaborador.nome}
+                {formatarCodigo(colaborador.numero)} · {colaborador.nome}
                 {colaborador.setor ? ` · ${colaborador.setor}` : ""}
               </NativeSelectOption>
             ))}
@@ -253,7 +254,7 @@ export function RetiradaFormulario({
                           key={material.id}
                           value={material.id}
                         >
-                          {material.nome}
+                          {formatarCodigo(material.numero)} · {material.nome}
                           {material.codigo
                             ? ` (${material.codigo})`
                             : ""} · {material.disponivel} disp.

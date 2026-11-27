@@ -146,6 +146,7 @@ export default async function EmprestimoPage({
               id: item.id,
               quantidade: item.quantidade,
               material: {
+                numero: item.material.numero,
                 nome: item.material.nome,
                 codigo: item.material.codigo,
                 controle: item.material.controle,

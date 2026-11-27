@@ -10,6 +10,14 @@ import { prisma } from "./prisma";
 //
 // REGRA DE OURO: toda consulta filtra por empresaId. Uma empresa nunca vê dados de outra.
 
+/**
+ * Se a busca for só número ("7", "0007"), também procura pelo código de 4 dígitos.
+ * Devolve uma lista (vazia ou com uma condição) pra espalhar dentro de um OR.
+ */
+function buscaPorCodigo(busca: string) {
+  return /^\d{1,4}$/.test(busca) ? [{ numero: Number(busca) }] : [];
+}
+
 // ---------- empréstimos ----------
 
 // O que trazer junto com cada empréstimo (o "JOIN" do Prisma).
@@ -134,6 +142,7 @@ export async function listarMateriais(filtro: FiltroMateriais = {}) {
         ? [
             { nome: { contains: filtro.busca, mode: "insensitive" } },
             { codigo: { contains: filtro.busca, mode: "insensitive" } },
+            ...buscaPorCodigo(filtro.busca),
           ]
         : undefined,
     },
@@ -189,6 +198,7 @@ export async function listarColaboradores(filtro: FiltroColaboradores = {}) {
             { nome: { contains: filtro.busca, mode: "insensitive" } },
             { matricula: { contains: filtro.busca, mode: "insensitive" } },
             { setor: { contains: filtro.busca, mode: "insensitive" } },
+            ...buscaPorCodigo(filtro.busca),
           ]
         : undefined,
     },
@@ -231,7 +241,7 @@ export async function opcoesDeRetirada() {
   const [colaboradores, materiais, emprestadas] = await Promise.all([
     prisma.colaborador.findMany({
       where: { empresaId, ativo: true },
-      select: { id: true, nome: true, setor: true },
+      select: { id: true, numero: true, nome: true, setor: true },
       orderBy: { nome: "asc" },
     }),
     prisma.material.findMany({
@@ -239,6 +249,7 @@ export async function opcoesDeRetirada() {
       select: {
         id: true,
         nome: true,
+        numero: true,
         codigo: true,
         controle: true,
         quantidade: true,

@@ -28,6 +28,11 @@ export const nomeDoStatus: Record<StatusEmprestimo, string> = {
   DEVOLVIDO: "Devolvido",
 };
 
+/** Código de 4 dígitos: 7 → "0007" */
+export function formatarCodigo(numero: number): string {
+  return String(numero).padStart(4, "0");
+}
+
 /** "Ana Souza" → "AS" */
 export function iniciais(nome: string): string {
   const partes = nome.trim().split(/\s+/);

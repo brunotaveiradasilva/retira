@@ -4,11 +4,17 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { registrarDevolucaoAction } from "@/actions/emprestimos";
 import { Button } from "@/components/ui/button";
+import { Codigo } from "@/components/app/codigo";
 
 type ItemPendente = {
   id: string;
   quantidade: number;
-  material: { nome: string; codigo: string | null; controle: string };
+  material: {
+    numero: number;
+    nome: string;
+    codigo: string | null;
+    controle: string;
+  };
 };
 
 type DevolucaoFormProps = {
@@ -74,6 +80,7 @@ export function DevolucaoFormulario({
                   }
                 />
                 <span>
+                  <Codigo numero={item.material.numero} className="mr-2" />
                   {item.quantidade > 1 && `${item.quantidade}× `}
                   {item.material.nome}
                   {item.material.codigo && (

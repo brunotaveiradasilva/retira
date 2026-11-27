@@ -12,6 +12,7 @@ import { ListaEmprestimos } from "@/components/app/lista-emprestimos";
 import { Badge } from "@/components/ui/badge";
 import { buscarColaborador, listarEmprestimos } from "@/lib/consultas";
 import { agora } from "@/lib/empresa-atual";
+import { formatarCodigo } from "@/lib/formatar";
 
 export async function generateMetadata({
   params,
@@ -52,6 +53,7 @@ export default async function ColaboradorPage({
           </h1>
           <p className="text-muted-foreground text-sm">
             {[
+              `Código ${formatarCodigo(colaborador.numero)}`,
               colaborador.setor,
               colaborador.matricula && `Matrícula ${colaborador.matricula}`,
             ]

@@ -105,7 +105,7 @@ export function MaterialFormulario({
         </Field>
 
         <Field data-invalid={!!errors.codigo}>
-          <FieldLabel htmlFor="codigo">Código / patrimônio</FieldLabel>
+          <FieldLabel htmlFor="codigo">Patrimônio</FieldLabel>
           <Input
             id="codigo"
             {...register("codigo")}

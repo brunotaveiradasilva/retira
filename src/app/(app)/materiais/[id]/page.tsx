@@ -15,6 +15,7 @@ import {
   quantidadeDisponivel,
   unidadesPendentes,
 } from "@/lib/regras";
+import { formatarCodigo } from "@/lib/formatar";
 
 // Fase 1 tinha generateStaticParams aqui: os ids eram fixos e o Next gerava as páginas no build.
 // Agora os materiais vêm do banco e mudam a qualquer hora, então a página é montada
@@ -54,7 +55,12 @@ export default async function MaterialPage({
           </Link>
         }
         titulo={material.nome}
-        descricao={material.codigo ?? undefined}
+        descricao={[
+          `Código ${formatarCodigo(material.numero)}`,
+          material.codigo && `Patrimônio ${material.codigo}`,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
         acoes={
           <div className="flex items-center gap-2">
             <EstadoBadge estado={material.estado} />
