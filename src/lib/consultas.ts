@@ -137,6 +137,60 @@ export async function buscarColaborador(id: string) {
   return prisma.colaborador.findFirst({ where: { id, empresaId } });
 }
 
+// ---------- retirada ----------
+
+export async function buscarEmprestimo(id: string) {
+  const empresaId = await empresaAtualId();
+  return prisma.emprestimo.findFirst({
+    where: { id, empresaId },
+    include: {
+      colaborador: true,
+      itens: {
+        include: { material: { include: { tipo: true } } },
+        orderBy: { material: { nome: "asc" } },
+      },
+      empresa: { select: { nome: true, cnpj: true } },
+    },
+  });
+}
+
+/** O que o formulário de retirada precisa: quem pode retirar e o que pode sair. */
+export async function opcoesDeRetirada() {
+  const empresaId = await empresaAtualId();
+  const [colaboradores, materiais, emprestadas] = await Promise.all([
+    prisma.colaborador.findMany({
+      where: { empresaId, ativo: true },
+      select: { id: true, nome: true, setor: true },
+      orderBy: { nome: "asc" },
+    }),
+    prisma.material.findMany({
+      where: { empresaId, estado: "BOM" },
+      select: {
+        id: true,
+        nome: true,
+        codigo: true,
+        controle: true,
+        quantidade: true,
+      },
+      orderBy: { nome: "asc" },
+    }),
+    unidadesEmprestadasPorMaterial(),
+  ]);
+
+  return {
+    colaboradores,
+    // Só o que tem pelo menos 1 unidade livre, já com o "disponível" calculado.
+    materiais: materiais
+      .map(({ quantidade, ...material }) => ({
+        ...material,
+        disponivel: quantidade - (emprestadas.get(material.id) ?? 0),
+      }))
+      .filter((material) => material.disponivel > 0),
+  };
+}
+
+export type OpcoesDeRetirada = Awaited<ReturnType<typeof opcoesDeRetirada>>;
+
 // ---------- painel ----------
 
 export async function resumoDoPainel(hoje: Date) {

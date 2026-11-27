@@ -9,12 +9,14 @@ import { lerSessao, type SessaoAtual } from "./sessao";
 // Agora vem do usuário logado. Como TODAS as consultas e actions já chamavam
 // empresaAtualId(), trocar só este arquivo protegeu o sistema inteiro.
 
-/** O usuário logado. Se não houver sessão válida, manda pro /login (e para a execução). */
+/** O usuário logado. Se não houver sessão válida, manda pro login (e para a execução). */
 export async function usuarioLogado(): Promise<SessaoAtual["usuario"]> {
   // lerSessao() lê o cookie: isso já diz ao Next que depende da requisição
   // (por isso não precisamos mais do connection() aqui).
   const sessao = await lerSessao();
-  if (!sessao) redirect("/login");
+  // Passa por /sessao-expirada (route.ts) pra APAGAR o cookie inválido antes do /login.
+  // Ir direto pro /login causava um loop: o proxy via o cookie e mandava pro /painel.
+  if (!sessao) redirect("/sessao-expirada");
   return sessao.usuario;
 }
 
