@@ -1,5 +1,6 @@
 import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
+import type { EstadoMaterial } from "@/types";
 import { empresaAtualId } from "./empresa-atual";
 import { prisma } from "./prisma";
 
@@ -55,6 +56,65 @@ export async function listarEmprestimos(
   });
 }
 
+// ---------- lista de empréstimos com filtro e paginação ----------
+
+export const SITUACOES = [
+  "abertos",
+  "atrasados",
+  "devolvidos",
+  "todos",
+] as const;
+// `typeof SITUACOES[number]` = "abertos" | "atrasados" | "devolvidos" | "todos".
+// O union type sai do próprio array: mudou o array, mudou o tipo.
+export type Situacao = (typeof SITUACOES)[number];
+
+export const POR_PAGINA = 10;
+
+type FiltroPaginado = {
+  situacao: Situacao;
+  /** Nome do colaborador */
+  busca?: string;
+  pagina: number;
+  hoje: Date;
+};
+
+export async function paginarEmprestimos(filtro: FiltroPaginado) {
+  const empresaId = await empresaAtualId();
+
+  // Prisma.EmprestimoWhereInput: o tipo do `where`. Montamos o objeto por partes.
+  const where: Prisma.EmprestimoWhereInput = { empresaId };
+  if (filtro.situacao === "abertos") where.status = { not: "DEVOLVIDO" };
+  if (filtro.situacao === "devolvidos") where.status = "DEVOLVIDO";
+  if (filtro.situacao === "atrasados") {
+    where.status = { not: "DEVOLVIDO" };
+    where.previsaoDevolucao = { lt: filtro.hoje };
+  }
+  if (filtro.busca) {
+    // Filtro por um campo da RELAÇÃO: empréstimos cujo colaborador tem esse nome.
+    where.colaborador = {
+      nome: { contains: filtro.busca, mode: "insensitive" },
+    };
+  }
+
+  // Duas consultas em paralelo: a página atual e o total (pra saber quantas páginas há).
+  const [itens, total] = await Promise.all([
+    prisma.emprestimo.findMany({
+      where,
+      include: comDetalhes,
+      orderBy: { retiradoEm: "desc" },
+      skip: (filtro.pagina - 1) * POR_PAGINA, // OFFSET: pula as páginas anteriores
+      take: POR_PAGINA, // LIMIT: quantos trazer
+    }),
+    prisma.emprestimo.count({ where }),
+  ]);
+
+  return {
+    itens,
+    total,
+    totalDePaginas: Math.max(1, Math.ceil(total / POR_PAGINA)),
+  };
+}
+
 // ---------- tipos ----------
 
 export async function listarTipos() {
@@ -69,10 +129,28 @@ export async function listarTipos() {
 
 // ---------- materiais ----------
 
-export async function listarMateriais() {
+export type FiltroMateriais = {
+  busca?: string;
+  tipoId?: string;
+  estado?: EstadoMaterial;
+};
+
+export async function listarMateriais(filtro: FiltroMateriais = {}) {
   const empresaId = await empresaAtualId();
   return prisma.material.findMany({
-    where: { empresaId },
+    where: {
+      empresaId,
+      tipoId: filtro.tipoId,
+      estado: filtro.estado,
+      // Busca no nome OU no código. `contains` = LIKE '%texto%' do SQL;
+      // mode: "insensitive" ignora maiúsculas/minúsculas (ILIKE no Postgres).
+      OR: filtro.busca
+        ? [
+            { nome: { contains: filtro.busca, mode: "insensitive" } },
+            { codigo: { contains: filtro.busca, mode: "insensitive" } },
+          ]
+        : undefined,
+    },
     include: { tipo: true },
     orderBy: { nome: "asc" },
   });
@@ -117,10 +195,26 @@ export async function unidadesEmprestadasPorMaterial(): Promise<
 
 // ---------- colaboradores ----------
 
-export async function listarColaboradores() {
+export type FiltroColaboradores = {
+  busca?: string;
+  /** false (padrão) = só ativos; true = ativos e inativos */
+  incluirInativos?: boolean;
+};
+
+export async function listarColaboradores(filtro: FiltroColaboradores = {}) {
   const empresaId = await empresaAtualId();
   return prisma.colaborador.findMany({
-    where: { empresaId },
+    where: {
+      empresaId,
+      ativo: filtro.incluirInativos ? undefined : true,
+      OR: filtro.busca
+        ? [
+            { nome: { contains: filtro.busca, mode: "insensitive" } },
+            { matricula: { contains: filtro.busca, mode: "insensitive" } },
+            { setor: { contains: filtro.busca, mode: "insensitive" } },
+          ]
+        : undefined,
+    },
     // Traz junto só os empréstimos em aberto, com os itens: é o que o cartão mostra.
     include: {
       emprestimos: {
@@ -192,6 +286,37 @@ export async function opcoesDeRetirada() {
 export type OpcoesDeRetirada = Awaited<ReturnType<typeof opcoesDeRetirada>>;
 
 // ---------- painel ----------
+
+/**
+ * Os materiais que mais saíram (somando as quantidades de todas as retiradas).
+ * groupBy + orderBy pela SOMA + take = "TOP 5" do SQL.
+ */
+export async function materiaisMaisEmprestados(limite = 5) {
+  const empresaId = await empresaAtualId();
+  const grupos = await prisma.itemEmprestimo.groupBy({
+    by: ["materialId"],
+    where: { emprestimo: { empresaId } },
+    _sum: { quantidade: true },
+    _count: { emprestimoId: true },
+    orderBy: { _sum: { quantidade: "desc" } },
+    take: limite,
+  });
+  if (grupos.length === 0) return [];
+
+  // O groupBy só devolve o id: buscamos os nomes numa segunda consulta (uma só, com IN).
+  const materiais = await prisma.material.findMany({
+    where: { id: { in: grupos.map((g) => g.materialId) } },
+    select: { id: true, nome: true },
+  });
+  const nomePorId = new Map(materiais.map((m) => [m.id, m.nome]));
+
+  return grupos.map((grupo) => ({
+    id: grupo.materialId,
+    nome: nomePorId.get(grupo.materialId) ?? "—",
+    unidades: grupo._sum.quantidade ?? 0,
+    retiradas: grupo._count.emprestimoId,
+  }));
+}
 
 export async function resumoDoPainel(hoje: Date) {
   const empresaId = await empresaAtualId();

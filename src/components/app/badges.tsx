@@ -21,12 +21,18 @@ export function EstadoBadge({ estado }: { estado: EstadoMaterial }) {
 
 type StatusBadgeProps = {
   status: StatusEmprestimo;
-  atrasado?: boolean;
+  /** Dias de atraso (0 = em dia). Vem de diasDeAtraso() em lib/regras.ts. */
+  diasAtrasado?: number;
 };
 
-export function StatusBadge({ status, atrasado = false }: StatusBadgeProps) {
+export function StatusBadge({ status, diasAtrasado = 0 }: StatusBadgeProps) {
   // "Atrasado" não é um status salvo: é calculado (previsão < hoje e ainda aberto).
-  if (atrasado) return <Badge variant="destructive">Atrasado</Badge>;
+  if (diasAtrasado > 0)
+    return (
+      <Badge variant="destructive">
+        Atrasado · {diasAtrasado} {diasAtrasado === 1 ? "dia" : "dias"}
+      </Badge>
+    );
   if (status === "DEVOLVIDO")
     return <Badge variant="outline">{nomeDoStatus[status]}</Badge>;
   return <Badge>{nomeDoStatus[status]}</Badge>;

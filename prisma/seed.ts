@@ -255,6 +255,47 @@ async function main() {
     },
   });
 
+  // Histórico: 14 empréstimos antigos, já devolvidos, pra ter o que paginar
+  // e um ranking de "mais emprestados" com cara de uso real.
+  const pessoas = [ana, carlos, juliana, marcos];
+  const historico = [
+    [furadeira, 1],
+    [trena, 2],
+    [capacete, 4],
+    [furadeira, 1],
+    [oculos, 3],
+    [radio, 2],
+    [capacete, 2],
+    [parafusadeira, 1],
+    [trena, 1],
+    [furadeira, 1],
+    [notebook, 1],
+    [capacete, 5],
+    [radio, 1],
+    [oculos, 2],
+  ] as const;
+  for (const [indice, [material, quantidade]] of historico.entries()) {
+    const retirada = -60 + indice * 3; // um a cada 3 dias, começando há 60 dias
+    await prisma.emprestimo.create({
+      data: {
+        empresaId,
+        colaboradorId: pessoas[indice % pessoas.length].id,
+        retiradoEm: dia(retirada),
+        previsaoDevolucao: dia(retirada + 5),
+        status: "DEVOLVIDO",
+        itens: {
+          create: [
+            {
+              materialId: material.id,
+              quantidade,
+              devolvidoEm: dia(retirada + 4),
+            },
+          ],
+        },
+      },
+    });
+  }
+
   const contagem = {
     materiais: await prisma.material.count(),
     colaboradores: await prisma.colaborador.count(),
