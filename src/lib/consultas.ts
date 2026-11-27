@@ -115,23 +115,10 @@ export async function paginarEmprestimos(filtro: FiltroPaginado) {
   };
 }
 
-// ---------- tipos ----------
-
-export async function listarTipos() {
-  const empresaId = await empresaAtualId();
-  return prisma.tipoMaterial.findMany({
-    where: { empresaId },
-    // _count: o Prisma conta os materiais de cada tipo sem trazer os materiais.
-    include: { _count: { select: { materiais: true } } },
-    orderBy: { nome: "asc" },
-  });
-}
-
 // ---------- materiais ----------
 
 export type FiltroMateriais = {
   busca?: string;
-  tipoId?: string;
   estado?: EstadoMaterial;
 };
 
@@ -140,7 +127,6 @@ export async function listarMateriais(filtro: FiltroMateriais = {}) {
   return prisma.material.findMany({
     where: {
       empresaId,
-      tipoId: filtro.tipoId,
       estado: filtro.estado,
       // Busca no nome OU no código. `contains` = LIKE '%texto%' do SQL;
       // mode: "insensitive" ignora maiúsculas/minúsculas (ILIKE no Postgres).
@@ -151,24 +137,15 @@ export async function listarMateriais(filtro: FiltroMateriais = {}) {
           ]
         : undefined,
     },
-    include: { tipo: true },
     orderBy: { nome: "asc" },
   });
 }
-
-// O tipo de retorno sai da própria função: "um item da lista que listarMateriais devolve".
-export type MaterialComTipo = Awaited<
-  ReturnType<typeof listarMateriais>
->[number];
 
 // findFirst (e não findUnique) porque filtramos por id E empresaId:
 // um id de outra empresa simplesmente não é encontrado.
 export async function buscarMaterial(id: string) {
   const empresaId = await empresaAtualId();
-  return prisma.material.findFirst({
-    where: { id, empresaId },
-    include: { tipo: true },
-  });
+  return prisma.material.findFirst({ where: { id, empresaId } });
 }
 
 /**
@@ -240,7 +217,7 @@ export async function buscarEmprestimo(id: string) {
     include: {
       colaborador: true,
       itens: {
-        include: { material: { include: { tipo: true } } },
+        include: { material: true },
         orderBy: { material: { nome: "asc" } },
       },
       empresa: { select: { nome: true, cnpj: true } },

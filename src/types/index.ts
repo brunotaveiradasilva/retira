@@ -8,7 +8,6 @@ export type {
   Emprestimo,
   ItemEmprestimo,
   Material,
-  TipoMaterial,
 } from "@/generated/prisma/client";
 
 export type {

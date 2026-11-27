@@ -3,17 +3,12 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { MaterialFormulario } from "@/components/materiais/material-form";
-import { buttonVariants } from "@/components/ui/button";
-import { listarTipos } from "@/lib/consultas";
 
 export const metadata: Metadata = { title: "Novo material" };
 
 // A pasta "novo" é fixa e tem prioridade sobre [id]: /materiais/novo cai aqui, não no detalhe.
-export default async function NovoMaterialPage() {
-  // O formulário roda no navegador, mas a lista de tipos vem do banco:
-  // a página (servidor) busca e entrega pronta por props.
-  const tipos = await listarTipos();
-
+// Sem os "tipos", esta página não lê mais o banco: não precisa ser async nem de loading.tsx.
+export default function NovoMaterialPage() {
   return (
     <>
       <PageHeader
@@ -27,19 +22,7 @@ export default async function NovoMaterialPage() {
         }
         titulo="Novo material"
       />
-      {tipos.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          Cadastre um tipo de material primeiro.{" "}
-          <Link href="/tipos" className={buttonVariants({ variant: "link" })}>
-            Ir para Tipos
-          </Link>
-        </p>
-      ) : (
-        <MaterialFormulario
-          materialId={null}
-          tipos={tipos.map(({ id, nome }) => ({ id, nome }))}
-        />
-      )}
+      <MaterialFormulario materialId={null} />
     </>
   );
 }

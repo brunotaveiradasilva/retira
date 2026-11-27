@@ -65,8 +65,7 @@ export default async function TermoPage({
             <tr className="border-b text-left">
               <th className="py-1 pr-2 font-medium">Qtd.</th>
               <th className="py-1 pr-2 font-medium">Material</th>
-              <th className="py-1 pr-2 font-medium">Código</th>
-              <th className="py-1 font-medium">Tipo</th>
+              <th className="py-1 font-medium">Código</th>
             </tr>
           </thead>
           <tbody>
@@ -74,8 +73,7 @@ export default async function TermoPage({
               <tr key={item.id} className="border-b">
                 <td className="py-1 pr-2 tabular-nums">{item.quantidade}</td>
                 <td className="py-1 pr-2">{item.material.nome}</td>
-                <td className="py-1 pr-2">{item.material.codigo ?? "—"}</td>
-                <td className="py-1">{item.material.tipo.nome}</td>
+                <td className="py-1">{item.material.codigo ?? "—"}</td>
               </tr>
             ))}
           </tbody>

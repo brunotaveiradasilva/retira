@@ -20,7 +20,6 @@ import {
 } from "@/components/app/filtros-url";
 import {
   listarMateriais,
-  listarTipos,
   unidadesEmprestadasPorMaterial,
 } from "@/lib/consultas";
 import { lerOpcao, lerTexto } from "@/lib/filtros";
@@ -35,20 +34,18 @@ const ESTADOS = Object.keys(nomeDoEstado) as EstadoMaterial[];
 export default async function MateriaisPage({
   searchParams,
 }: PageProps<"/materiais">) {
-  // /materiais?busca=fur&tipo=<id>&estado=BOM → cada parte vira um filtro no banco.
+  // /materiais?busca=fur&estado=BOM → cada parte vira um filtro no banco.
   const parametros = await searchParams;
   const filtro = {
     busca: lerTexto(parametros.busca),
-    tipoId: lerTexto(parametros.tipo),
     estado: lerOpcao(parametros.estado, ESTADOS), // valor fora da lista → sem filtro
   };
-  const filtrando = Boolean(filtro.busca || filtro.tipoId || filtro.estado);
+  const filtrando = Boolean(filtro.busca || filtro.estado);
 
-  // Três consultas independentes: em paralelo.
-  const [materiais, emprestadas, tipos] = await Promise.all([
+  // Duas consultas independentes: em paralelo.
+  const [materiais, emprestadas] = await Promise.all([
     listarMateriais(filtro),
     unidadesEmprestadasPorMaterial(),
-    listarTipos(),
   ]);
 
   return (
@@ -72,14 +69,6 @@ export default async function MateriaisPage({
       <Suspense>
         <BarraDeFiltros>
           <CampoBusca placeholder="Buscar por nome ou código" />
-          <FiltroSelect
-            parametro="tipo"
-            rotulo="Filtrar por tipo"
-            opcoes={[
-              { valor: "", rotulo: "Todos os tipos" },
-              ...tipos.map((tipo) => ({ valor: tipo.id, rotulo: tipo.nome })),
-            ]}
-          />
           <FiltroSelect
             parametro="estado"
             rotulo="Filtrar por estado"
@@ -106,7 +95,6 @@ export default async function MateriaisPage({
             <TableHeader>
               <TableRow>
                 <TableHead>Material</TableHead>
-                <TableHead className="hidden sm:table-cell">Tipo</TableHead>
                 <TableHead className="text-right">Disponível</TableHead>
                 <TableHead className="hidden sm:table-cell">Estado</TableHead>
               </TableRow>
@@ -131,10 +119,6 @@ export default async function MateriaisPage({
                           {material.codigo}
                         </div>
                       )}
-                    </TableCell>
-                    {/* material.tipo veio junto pelo include: { tipo: true } */}
-                    <TableCell className="hidden sm:table-cell">
-                      {material.tipo.nome}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       <span

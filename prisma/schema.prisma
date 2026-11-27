@@ -41,7 +41,6 @@ model Empresa {
   criadoEm DateTime @default(now()) @map("criado_em")
 
   // Lados "1 → N" das relações: não viram coluna, servem para navegar nos dados.
-  tipos         TipoMaterial[]
   materiais     Material[]
   colaboradores Colaborador[]
   emprestimos   Emprestimo[]
@@ -92,18 +91,6 @@ model Sessao {
   @@map("sessoes")
 }
 
-model TipoMaterial {
-  id        String  @id @default(cuid())
-  nome      String
-  empresaId String  @map("empresa_id")
-  empresa   Empresa @relation(fields: [empresaId], references: [id])
-
-  materiais Material[]
-
-  @@unique([empresaId, nome]) // não repete "EPIs" dentro da mesma empresa
-  @@map("tipos_material")
-}
-
 model Material {
   id         String         @id @default(cuid())
   nome       String
@@ -113,10 +100,8 @@ model Material {
   estado     EstadoMaterial @default(BOM)
   criadoEm   DateTime       @default(now()) @map("criado_em")
 
-  tipoId    String       @map("tipo_id")
-  tipo      TipoMaterial @relation(fields: [tipoId], references: [id])
-  empresaId String       @map("empresa_id")
-  empresa   Empresa      @relation(fields: [empresaId], references: [id])
+  empresaId String  @map("empresa_id")
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
 
   itens ItemEmprestimo[]
 

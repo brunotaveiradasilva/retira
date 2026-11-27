@@ -4,7 +4,6 @@ import type { MaterialInput } from "@/schemas/material";
 import { RegraDeNegocioError, violouUnico } from "./erros";
 
 export async function criarMaterial(empresaId: string, dados: MaterialInput) {
-  await garantirTipoDaEmpresa(empresaId, dados.tipoId);
   try {
     return await prisma.material.create({ data: { ...dados, empresaId } });
   } catch (erro) {
@@ -18,7 +17,6 @@ export async function atualizarMaterial(
   dados: MaterialInput,
 ) {
   await garantirMaterialDaEmpresa(empresaId, id);
-  await garantirTipoDaEmpresa(empresaId, dados.tipoId);
 
   // Regra: não dá pra baixar a quantidade abaixo do que está emprestado agora.
   const emprestado = await unidadesForaAgora(id);
@@ -69,13 +67,6 @@ async function garantirMaterialDaEmpresa(empresaId: string, id: string) {
   });
   if (!material) throw new RegraDeNegocioError("Material não encontrado.");
   return material;
-}
-
-async function garantirTipoDaEmpresa(empresaId: string, tipoId: string) {
-  const tipo = await prisma.tipoMaterial.findFirst({
-    where: { id: tipoId, empresaId },
-  });
-  if (!tipo) throw new RegraDeNegocioError("Tipo inválido.", "tipoId");
 }
 
 function traduzirErro(erro: unknown) {

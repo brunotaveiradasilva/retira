@@ -21,7 +21,6 @@ async function main() {
   await prisma.itemEmprestimo.deleteMany();
   await prisma.emprestimo.deleteMany();
   await prisma.material.deleteMany();
-  await prisma.tipoMaterial.deleteMany();
   await prisma.colaborador.deleteMany();
   await prisma.sessao.deleteMany();
   await prisma.usuario.deleteMany();
@@ -56,29 +55,14 @@ async function main() {
       empresaId: oficina.id,
     },
   });
-  const chaves = await prisma.tipoMaterial.create({
-    data: { nome: "Chaves", empresaId: oficina.id },
-  });
   await prisma.material.create({
     data: {
       nome: "Jogo de chaves combinadas",
-      tipoId: chaves.id,
       empresaId: oficina.id,
     },
   });
   await prisma.colaborador.create({
     data: { nome: "Bia Mecânica", setor: "Oficina", empresaId: oficina.id },
-  });
-
-  // create devolve o registro criado, com o id gerado pelo banco.
-  const ferramentas = await prisma.tipoMaterial.create({
-    data: { nome: "Ferramentas", empresaId },
-  });
-  const epis = await prisma.tipoMaterial.create({
-    data: { nome: "EPIs", empresaId },
-  });
-  const ti = await prisma.tipoMaterial.create({
-    data: { nome: "Equipamentos de TI", empresaId },
   });
 
   // Helper local pra não repetir empresaId em todo material.
@@ -91,56 +75,46 @@ async function main() {
   const furadeira = await material({
     nome: "Furadeira Bosch GSB 13",
     codigo: "FER-001",
-    tipoId: ferramentas.id,
   });
   const parafusadeira = await material({
     nome: "Parafusadeira Makita",
     codigo: "FER-002",
-    tipoId: ferramentas.id,
   });
   await material({
     nome: 'Esmerilhadeira 4½"',
     codigo: "FER-003",
-    tipoId: ferramentas.id,
     estado: "MANUTENCAO",
   });
   const trena = await material({
     nome: "Trena 5 m",
-    tipoId: ferramentas.id,
     controle: "QUANTIDADE",
     quantidade: 8,
   });
   const capacete = await material({
     nome: "Capacete de segurança",
-    tipoId: epis.id,
     controle: "QUANTIDADE",
     quantidade: 20,
   });
   const oculos = await material({
     nome: "Óculos de proteção",
-    tipoId: epis.id,
     controle: "QUANTIDADE",
     quantidade: 15,
   });
   await material({
     nome: "Cinto paraquedista",
     codigo: "EPI-010",
-    tipoId: epis.id,
     estado: "DANIFICADO",
   });
   const notebook = await material({
     nome: "Notebook Dell Latitude",
     codigo: "TI-001",
-    tipoId: ti.id,
   });
   const projetor = await material({
     nome: "Projetor Epson",
     codigo: "TI-002",
-    tipoId: ti.id,
   });
   const radio = await material({
     nome: "Rádio comunicador",
-    tipoId: ti.id,
     controle: "QUANTIDADE",
     quantidade: 6,
   });

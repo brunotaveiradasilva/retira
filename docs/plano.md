@@ -16,7 +16,7 @@ Futuro: API em Java (Spring Boot) no mesmo Postgres.
 
 ```
 Empresa 1──N Usuario
-Empresa 1──N TipoMaterial 1──N Material
+Empresa 1──N Material
 Empresa 1──N Colaborador
 Empresa 1──N Emprestimo N──1 Colaborador
 Emprestimo 1──N ItemEmprestimo N──1 Material
@@ -63,3 +63,9 @@ Emprestimo 1──N ItemEmprestimo N──1 Material
 | 8 · Java           | API Spring Boot no mesmo Postgres                              | Spring Boot, JPA, REST                                            |
 
 Ciclo de cada feature: **schema Zod → service → action → formulário → lista/detalhe → teste do service**.
+
+## Mudanças depois das fases
+
+| Data       | Mudança                                                                                                                                                         | Por quê                                                                                                                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 27/11/2026 | **Tipos de material removidos** (menu, página, campo, filtro, coluna; migration `remover_tipos` apaga a tabela `tipos_material` e a coluna `materiais.tipo_id`) | No uso real o campo não era necessário e obrigava criar um tipo antes do primeiro material. Os guias das fases 1–3 ainda mostram os tipos: é o histórico de como foi construído. |

@@ -54,9 +54,7 @@ export default async function MaterialPage({
           </Link>
         }
         titulo={material.nome}
-        descricao={[material.codigo, material.tipo.nome]
-          .filter(Boolean)
-          .join(" · ")}
+        descricao={material.codigo ?? undefined}
         acoes={
           <div className="flex items-center gap-2">
             <EstadoBadge estado={material.estado} />

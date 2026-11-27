@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { MaterialFormulario } from "@/components/materiais/material-form";
-import { buscarMaterial, listarTipos } from "@/lib/consultas";
+import { buscarMaterial } from "@/lib/consultas";
 
 export async function generateMetadata({
   params,
@@ -17,10 +17,7 @@ export default async function EditarMaterialPage({
   params,
 }: PageProps<"/materiais/[id]/editar">) {
   const { id } = await params;
-  const [material, tipos] = await Promise.all([
-    buscarMaterial(id),
-    listarTipos(),
-  ]);
+  const material = await buscarMaterial(id);
   if (!material) notFound();
 
   return (
@@ -38,12 +35,10 @@ export default async function EditarMaterialPage({
       />
       <MaterialFormulario
         materialId={material.id}
-        tipos={tipos.map(({ id, nome }) => ({ id, nome }))}
         // O banco guarda null; o formulário trabalha com texto ("").
         valoresIniciais={{
           nome: material.nome,
           codigo: material.codigo ?? "",
-          tipoId: material.tipoId,
           controle: material.controle,
           quantidade: material.quantidade,
           estado: material.estado,

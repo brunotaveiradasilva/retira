@@ -24,7 +24,6 @@ describe("materialSchema", () => {
   const valido = {
     nome: "  Furadeira  ",
     codigo: "",
-    tipoId: "t1",
     controle: "UNITARIO",
     quantidade: 1,
     estado: "BOM",

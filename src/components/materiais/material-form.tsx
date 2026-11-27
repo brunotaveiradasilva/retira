@@ -30,7 +30,6 @@ import type { EstadoMaterial } from "@/types";
 type MaterialFormProps = {
   /** null = cadastrar; um id = editar esse material */
   materialId: string | null;
-  tipos: { id: string; nome: string }[];
   valoresIniciais?: MaterialForm;
 };
 
@@ -38,7 +37,6 @@ const estados = Object.keys(nomeDoEstado) as EstadoMaterial[];
 
 export function MaterialFormulario({
   materialId,
-  tipos,
   valoresIniciais,
 }: MaterialFormProps) {
   const router = useRouter();
@@ -52,7 +50,6 @@ export function MaterialFormulario({
     defaultValues: valoresIniciais ?? {
       nome: "",
       codigo: "",
-      tipoId: tipos[0]?.id ?? "",
       controle: "UNITARIO",
       quantidade: 1,
       estado: "BOM",
@@ -107,35 +104,17 @@ export function MaterialFormulario({
           <FieldError errors={[errors.nome]} />
         </Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field data-invalid={!!errors.codigo}>
-            <FieldLabel htmlFor="codigo">Código / patrimônio</FieldLabel>
-            <Input
-              id="codigo"
-              {...register("codigo")}
-              aria-invalid={!!errors.codigo}
-              placeholder="Opcional"
-            />
-            <FieldError errors={[errors.codigo]} />
-          </Field>
-
-          <Field data-invalid={!!errors.tipoId}>
-            <FieldLabel htmlFor="tipoId">Tipo</FieldLabel>
-            <NativeSelect
-              id="tipoId"
-              {...register("tipoId")}
-              aria-invalid={!!errors.tipoId}
-              className="w-full"
-            >
-              {tipos.map((tipo) => (
-                <NativeSelectOption key={tipo.id} value={tipo.id}>
-                  {tipo.nome}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-            <FieldError errors={[errors.tipoId]} />
-          </Field>
-        </div>
+        <Field data-invalid={!!errors.codigo}>
+          <FieldLabel htmlFor="codigo">Código / patrimônio</FieldLabel>
+          <Input
+            id="codigo"
+            {...register("codigo")}
+            aria-invalid={!!errors.codigo}
+            placeholder="Opcional"
+            className="sm:w-64"
+          />
+          <FieldError errors={[errors.codigo]} />
+        </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
