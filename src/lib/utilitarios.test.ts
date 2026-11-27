@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fimDoDia, paraInputDate } from "./datas";
+import { fimDoDia, inicioDoDia, meioDoDia, paraInputDate } from "./datas";
 import { lerOpcao, lerPagina, lerTexto, urlCom } from "./filtros";
 import { formatarData, iniciais } from "./formatar";
 import { conferirSenha, gerarHashDeSenha } from "./senha";
@@ -86,5 +86,20 @@ describe("senha", () => {
 
   it("hash em formato estranho não confere (e não quebra)", async () => {
     expect(await conferirSenha("x", "lixo")).toBe(false);
+  });
+});
+
+describe("datas sem hora (evento e retirada)", () => {
+  it("meio-dia de Brasília continua no mesmo dia em UTC", () => {
+    expect(meioDoDia("2026-12-03").toISOString()).toBe(
+      "2026-12-03T15:00:00.000Z",
+    );
+    expect(paraInputDate(meioDoDia("2026-12-03"))).toBe("2026-12-03");
+  });
+
+  it("início do dia de Brasília é 03:00 em UTC", () => {
+    expect(inicioDoDia("2026-12-03").toISOString()).toBe(
+      "2026-12-03T03:00:00.000Z",
+    );
   });
 });

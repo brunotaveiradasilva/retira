@@ -26,6 +26,20 @@ export function paraInputDate(data: Date): string {
   }).format(data);
 }
 
+/** "2026-12-03" → 03/12/2026 às 00:00 de Brasília (início do dia). */
+export function inicioDoDia(data: string): Date {
+  return new Date(`${data}T00:00:00${DESLOCAMENTO}`);
+}
+
+/**
+ * "2026-12-03" → 03/12/2026 ao meio-dia de Brasília.
+ * Pra datas "sem hora" (como o dia do evento): o meio-dia fica longe da meia-noite,
+ * então nenhum fuso empurra a data pro dia anterior ou seguinte.
+ */
+export function meioDoDia(data: string): Date {
+  return new Date(`${data}T12:00:00${DESLOCAMENTO}`);
+}
+
 /** Soma (ou subtrai) dias inteiros. */
 export function somarDias(data: Date, dias: number): Date {
   return new Date(data.getTime() + dias * 24 * 60 * 60 * 1000);

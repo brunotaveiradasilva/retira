@@ -84,10 +84,56 @@ describe("colaboradorSchema", () => {
 describe("retiradaSchema", () => {
   const base = {
     colaboradorId: "c1",
+    retiradoEm: "2026-12-01",
     previsaoDevolucao: "2026-12-03",
     observacao: "",
     itens: [{ materialId: "m1", quantidade: 1 }],
   };
+
+  it("data de retirada é obrigatória", () => {
+    expect(
+      errosDe(
+        retiradaSchema.safeParse({ ...base, retiradoEm: "" }),
+        "retiradoEm",
+      ),
+    ).toContain("Informe a data de retirada");
+  });
+
+  it("evento e endereço são opcionais (vazio vira null)", () => {
+    const dados = retiradaSchema.parse({
+      ...base,
+      dataEvento: "",
+      localEvento: "",
+      enderecoEvento: "",
+    });
+    expect([dados.dataEvento, dados.localEvento, dados.enderecoEvento]).toEqual(
+      [null, null, null],
+    );
+  });
+
+  it("retirada → evento → devolução, nessa ordem", () => {
+    expect(
+      retiradaSchema.safeParse({ ...base, dataEvento: "2026-12-02" }).success,
+    ).toBe(true);
+    expect(
+      errosDe(
+        retiradaSchema.safeParse({ ...base, dataEvento: "2026-11-30" }),
+        "dataEvento",
+      ),
+    ).toContain("O evento não pode ser antes da retirada");
+    expect(
+      errosDe(
+        retiradaSchema.safeParse({ ...base, previsaoDevolucao: "2026-11-30" }),
+        "previsaoDevolucao",
+      ),
+    ).toContain("A devolução não pode ser antes da retirada");
+    expect(
+      errosDe(
+        retiradaSchema.safeParse({ ...base, dataEvento: "2026-12-05" }),
+        "previsaoDevolucao",
+      ),
+    ).toContain("A devolução não pode ser antes do evento");
+  });
 
   it("lista vazia é recusada", () => {
     expect(retiradaSchema.safeParse({ ...base, itens: [] }).success).toBe(

@@ -47,6 +47,7 @@ export default async function NovaRetiradaPage({
       />
       <RetiradaFormulario
         {...opcoes}
+        hoje={paraInputDate(hoje)}
         prazoSugerido={paraInputDate(prazo)}
         colaboradorInicial={colaboradorInicial}
       />

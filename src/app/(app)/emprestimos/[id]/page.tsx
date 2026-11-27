@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft, CalendarDays, MapPin, Printer } from "lucide-react";
 import { StatusBadge } from "@/components/app/badges";
 import { PageHeader } from "@/components/app/page-header";
 import { DevolucaoFormulario } from "@/components/emprestimos/devolucao-form";
@@ -77,16 +77,59 @@ export default async function EmprestimoPage({
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Devolver até</dt>
-          <dd className={atrasado ? "text-destructive font-medium" : ""}>
-            {formatarData(emprestimo.previsaoDevolucao)}
-            {atrasado && " (atrasado)"}
+          <dt className="text-muted-foreground">Período</dt>
+          <dd>
+            {formatarData(emprestimo.retiradoEm)}
+            {" → "}
+            <span className={atrasado ? "text-destructive font-medium" : ""}>
+              {formatarData(emprestimo.previsaoDevolucao)}
+              {atrasado && " (atrasado)"}
+            </span>
           </dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Observação</dt>
           <dd>{emprestimo.observacao ?? "—"}</dd>
         </div>
+
+        {/* Só aparece se houver algum dado de evento. */}
+        {(emprestimo.dataEvento ||
+          emprestimo.localEvento ||
+          emprestimo.enderecoEvento) && (
+          <div className="border-t pt-4 sm:col-span-3">
+            <dt className="text-muted-foreground flex items-center gap-1">
+              <CalendarDays className="size-4" aria-hidden="true" /> Evento
+            </dt>
+            <dd className="mt-1">
+              {emprestimo.dataEvento && (
+                <span className="font-medium">
+                  {formatarData(emprestimo.dataEvento)}
+                </span>
+              )}
+              {emprestimo.localEvento && (
+                <>
+                  {emprestimo.dataEvento && " · "}
+                  {emprestimo.localEvento}
+                </>
+              )}
+              {emprestimo.enderecoEvento && (
+                <div className="mt-1">
+                  {/* Link pro Google Maps com o endereço. encodeURIComponent troca espaços
+                      e acentos pelos códigos que uma URL aceita. */}
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(emprestimo.enderecoEvento)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary inline-flex items-center gap-1 hover:underline"
+                  >
+                    <MapPin className="size-4" aria-hidden="true" />
+                    {emprestimo.enderecoEvento}
+                  </a>
+                </div>
+              )}
+            </dd>
+          </div>
+        )}
       </dl>
 
       {pendentes.length > 0 && (

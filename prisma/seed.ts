@@ -165,6 +165,9 @@ async function main() {
       colaboradorId: ana.id,
       retiradoEm: dia(-2),
       previsaoDevolucao: dia(3),
+      dataEvento: dia(1),
+      localEvento: "Feira da Construção",
+      enderecoEvento: "Av. Assis Brasil, 10000 - Esteio, RS",
       itens: {
         create: [{ materialId: furadeira.id }, { materialId: capacete.id }],
       },
@@ -178,6 +181,9 @@ async function main() {
       retiradoEm: dia(-10),
       previsaoDevolucao: dia(-3), // atrasado
       observacao: "Obra da Rua Independência",
+      dataEvento: dia(-7),
+      localEvento: "Obra Independência",
+      enderecoEvento: "Rua Independência, 500 - Porto Alegre, RS",
       itens: {
         create: [
           { materialId: parafusadeira.id },

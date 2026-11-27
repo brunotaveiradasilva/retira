@@ -41,6 +41,7 @@ export const config = {
     "/materiais/:path*",
     "/colaboradores/:path*",
     "/emprestimos/:path*",
+    "/calendario/:path*",
     "/login",
     "/cadastro",
   ],
