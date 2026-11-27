@@ -14,7 +14,8 @@ export default defineConfig({
     // O CLI (migrate, studio) usa a conexão DIRETA quando existir. No Neon, a
     // DATABASE_URL do site passa por um "pooler" (bom pra muitas conexões curtas),
     // mas as migrations precisam falar direto com o banco. Localmente só há uma URL.
-    url: process.env.DIRECT_URL ?? env("DATABASE_URL"),
+    // || (e não ??): uma variável que existe mas está VAZIA também cai na DATABASE_URL.
+    url: process.env.DIRECT_URL || env("DATABASE_URL"),
     // Banco descartável que o `migrate dev` usa pra comparar migrations.
     // O `prisma dev` já oferece um (porta 51215). Em produção não é usado.
     shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL,
