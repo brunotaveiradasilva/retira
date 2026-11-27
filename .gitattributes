@@ -1,0 +1,8 @@
+# Todo arquivo de texto com fim de linha LF (padrão do Linux/macOS e do Prettier),
+# mesmo no Windows. Acaba com os avisos "LF will be replaced by CRLF".
+* text=auto eol=lf
+
+# Binários: nunca mexer.
+*.png binary
+*.jpg binary
+*.ico binary
